@@ -1,0 +1,56 @@
+{
+  "name": "@drizztdourden08/brock-lint-config",
+  "version": "0.1.0",
+  "description": "Brock lint stack: the local ESLint rules, the writing gate, stylelint token rules, markdownlint rules and the tsconfig bases every Brock repo extends.",
+  "type": "module",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/drizztdourden08/brock.git",
+    "directory": "packages/lint-config"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "exports": {
+    ".": "./eslint.mjs",
+    "./eslint": "./eslint.mjs",
+    "./stylelint": "./stylelint.mjs",
+    "./markdownlint": "./markdownlint.mjs",
+    "./markdown-rules": "./markdown-rules.mjs",
+    "./slop-patterns": "./slop-patterns.mjs",
+    "./slop-line-kind": "./slop-line-kind.mjs",
+    "./tsconfig/*": "./tsconfig/*",
+    "./stylelint-rules/*": "./stylelint-rules/*",
+    "./file-shape": "./file-shape.mjs"
+  },
+  "files": [
+    "*.mjs",
+    "rules",
+    "tsconfig",
+    "README.md",
+    "stylelint-rules"
+  ],
+  "peerDependencies": {
+    "eslint": "^10.0.0",
+    "eslint-plugin-react-hooks": "^7.0.0",
+    "markdownlint-cli2": "^0.22.0",
+    "stylelint": "^17.0.0",
+    "stylelint-config-standard": "^40.0.0",
+    "typescript-eslint": "^8.0.0"
+  },
+  "peerDependenciesMeta": {
+    "markdownlint-cli2": {
+      "optional": true
+    },
+    "stylelint-config-standard": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "@eslint/js": "^10.0.0"
+  }
+}
