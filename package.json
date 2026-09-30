@@ -1,6 +1,6 @@
 {
   "name": "@drizztdourden08/brock-lint-config",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Brock lint stack: the local ESLint rules, the writing gate, stylelint token rules, markdownlint rules and the tsconfig bases every Brock repo extends.",
   "type": "module",
   "license": "UNLICENSED",
