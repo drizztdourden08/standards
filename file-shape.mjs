@@ -8,7 +8,7 @@ const FILE_KIND = {
   test: /\.test\.tsx?$|(^|\/)tests\//,
   config: /\.config\.(?:ts|mjs|cjs|js)$|(^|\/)brock\.config\.ts$/,
   entry: /(^|\/)(?:main|preload|splash)\.tsx?$/,
-  screen: /(^|\/)src\/screens\/.+\.(?:(?:hero|page|tab|card|custom)\.tsx|settings\.ts)$/,
+  screen: /(^|\/)src\/screens\/.+\.(?:(?:hero|page|tab|card|custom|layer)\.tsx|settings\.ts)$/,
 };
 
 const SHAPE_OFF_KINDS = ['story', 'test', 'config'];

@@ -50,7 +50,7 @@ const BASE_IGNORES = [
 ];
 
 const DEFAULT_CONSOLE_GLOBS = ['**/bin/**', '**/scripts/**', '**/tooling/**', '**/*.test.{ts,tsx,js,mjs}'];
-const SCREEN_FILE_GLOBS = ['**/src/screens/**/*.{hero,page,tab,card,custom}.tsx', '**/src/screens/**/*.settings.ts'];
+const SCREEN_FILE_GLOBS = ['**/src/screens/**/*.{hero,page,tab,card,custom,layer}.tsx', '**/src/screens/**/*.settings.ts'];
 const DEFAULT_EXPORT_GLOBS = [...SCREEN_FILE_GLOBS, '**/*.stories.{ts,tsx}', '**/modules/*/src/{main,preload,renderer}/index.ts', '**/stylelint-rules/*.mjs', '**/brock.workspace.mjs', '**/boot/*.task.ts'];
 const NODE_GLOBALS = { process: 'readonly', console: 'readonly', Buffer: 'readonly', URL: 'readonly', fetch: 'readonly', setTimeout: 'readonly', clearTimeout: 'readonly' };
 
