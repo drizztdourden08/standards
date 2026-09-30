@@ -32,7 +32,8 @@
     "rules",
     "tsconfig",
     "README.md",
-    "stylelint-rules"
+    "stylelint-rules",
+    "CHANGELOG.md"
   ],
   "peerDependencies": {
     "eslint": "^10.0.0",
