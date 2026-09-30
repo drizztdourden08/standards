@@ -8,10 +8,11 @@ const FILE_KIND = {
   test: /\.test\.tsx?$|(^|\/)tests\//,
   config: /\.config\.(?:ts|mjs|cjs|js)$|(^|\/)brock\.config\.ts$/,
   entry: /(^|\/)(?:main|preload|splash)\.tsx?$/,
+  screen: /(^|\/)src\/screens\/.+\.(?:(?:hero|page|tab|card|custom)\.tsx|settings\.ts)$/,
 };
 
 const SHAPE_OFF_KINDS = ['story', 'test', 'config'];
-const ONE_EXPORT_EXEMPT = ['barrel', 'types', 'constants', 'story', 'test', 'config'];
+const ONE_EXPORT_EXEMPT = ['barrel', 'types', 'constants', 'story', 'test', 'config', 'screen'];
 const GLOBAL_STYLESHEET = /(^|\/)(?:theme|tokens|reset|fonts)[^/]*\.css$|\/(?:theme|tokens)\//;
 const UPPER_SNAKE = /^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+$|^[A-Z]{2,}[A-Z0-9]*$/;
 const HOOK_NAME = /^use[A-Z]\w*$/;
