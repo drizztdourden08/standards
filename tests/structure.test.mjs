@@ -2,14 +2,14 @@
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import { checkShapes, collectFindings, structureRules } from '../structure/index.mjs';
-import usageFiles from '../extensions/usage-files/index.mjs';
 import { tempTree, removeTempTrees } from './temp-tree.mjs';
 
 const files = (paths) => Object.fromEntries(paths.map((path) => [path, '']));
 
 const BUTTON = ['src/index.ts', 'src/primitives/Button/Button.tsx', 'src/primitives/Button/index.ts'];
 const WITH_SUB = [...BUTTON, 'src/primitives/Button/sub-components/ButtonIcon/ButtonIcon.tsx', 'src/primitives/Button/sub-components/ButtonIcon/index.ts'];
-const usageRules = structureRules([usageFiles]);
+const REQUIRED_USAGE = { id: 'usage', structure: { componentFiles: [{ file: '{Name}.usage.ts', required: true, reason: 'every part says when to use it' }] } };
+const usageRules = structureRules([REQUIRED_USAGE]);
 
 afterEach(removeTempTrees);
 
@@ -19,15 +19,15 @@ describe('component folders', () => {
     expect(checkShapes(root, join(root, 'src'))).toEqual([]);
   });
 
-  it('asks nothing of a repo that does not list usage-files', () => {
+  it('asks nothing of a repo whose extensions do not require it', () => {
     const root = tempTree(files(BUTTON));
     expect(checkShapes(root, join(root, 'src'))).toEqual([]);
   });
 
-  it('requires Name.usage.ts with usage-files, outside sub-components only', () => {
+  it('requires Name.usage.ts when an extension says so, outside sub-components only', () => {
     const root = tempTree(files(WITH_SUB));
     expect(checkShapes(root, join(root, 'src'), [], usageRules)).toEqual([
-      'src/primitives/Button: missing Button.usage.ts (every design-system component documents when to use it)',
+      'src/primitives/Button: missing Button.usage.ts (every part says when to use it)',
     ]);
   });
 

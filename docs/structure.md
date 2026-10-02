@@ -39,7 +39,7 @@ shell/TitleBar/                       a component folder: recognised by TitleBar
 ├── TitleBar.css
 ├── TitleBar.type.ts                  every type and interface of the component
 ├── TitleBar.constants.ts             every UPPER_SNAKE constant
-├── TitleBar.usage.ts                 when to use the component (required with the usage-files extension)
+├── TitleBar.usage.ts                 when to use the component (allowed everywhere; an extension such as Tessera's requires it)
 ├── behavior/
 │   ├── useTitleBar.ts                one hook, named after the file
 │   └── title-bar-class.ts            one pure function, kebab-case
@@ -66,7 +66,7 @@ settings/features/                    a module folder: no .tsx of its own name
 | A `useX` hook lives alone in `useX.ts` | `local/hook-file-named-after-hook` |
 | A component imports only `./<Name>.css`; theme and token sheets are imported by the entry | `local/css-beside-component` |
 | A component folder holds `Name.tsx`, `index.ts` and, optionally, `Name.css`, `Name.type.ts`, `Name.constants.ts`, `Name.usage.ts`, `behavior/`, `sub-components/`, plus the files an extension adds; a flat component is `Name.tsx`; a module folder holds kebab-case `.ts` files, `useX.ts`, `<subject>.type.ts`, `<subject>.constants.ts`, `index.ts`, plus the forms an extension adds | `standards structure` |
-| With the `usage-files` extension, every component folder outside `sub-components/` holds `Name.usage.ts`, the note on when to use the component | `standards structure` |
+| In a Tessera app, every component folder of the `parts` folders in `tessera.config.json` holds `Name.usage.ts`, the note on when to use the component; Tessera's extension adds the check | `standards structure` |
 | Stories, tests and config files are exempt from the shape rules; a file that is a list by nature goes under `shapeOff: [{ files, why }]` | the ESLint factory |
 
 ## Where raw values live

@@ -1,7 +1,8 @@
 /* @layer tooling-scripts @kind test */
 import { afterEach, describe, expect, it } from 'vitest';
 import { defineExtension, defineStandards, loadStandards } from '../index.mjs';
-import { mergeOptions } from '../config/merge.mjs';
+import { join } from 'node:path';
+import { facetOptions, mergeOptions } from '../config/merge.mjs';
 import { tempTree, removeTempTrees } from './temp-tree.mjs';
 
 const MODULE_EXTENSION = 'export default { id: "from-module", prose: { banned: ["frobnicate"] } };\n';
@@ -46,10 +47,17 @@ describe('loadStandards', () => {
     expect(extensions).toEqual([{ id: 'same', prose: { allow: ['a'] } }]);
   });
 
-  it('resolves the usage-files extension by its package path', () => {
+  it('resolves a preset by its package path', () => {
     const root = tempTree({ 'package.json': { name: 'app' } });
-    const { extensions } = loadStandards({ rootDir: root, extensions: ['@drizztdourden08/standards/extensions/usage-files'] });
-    expect(extensions[0].id).toBe('usage-files');
+    const { extensions } = loadStandards({ rootDir: root, extensions: ['@drizztdourden08/standards/presets/library'] });
+    expect(extensions[0].id).toBe('preset:library');
+  });
+
+  it('ships no usage-files extension and no primitives folder in the design-system preset', () => {
+    const root = tempTree({ 'package.json': { name: 'app' } });
+    expect(() => loadStandards({ rootDir: root, extensions: ['@drizztdourden08/standards/extensions/usage-files'] })).toThrow(/cannot load extension/);
+    const [preset] = loadStandards({ rootDir: root, presets: ['design-system'], discover: false }).extensions;
+    expect(preset.eslint.options).toBeUndefined();
   });
 
   it('reads options from standards.config.mjs', () => {
@@ -60,6 +68,46 @@ describe('loadStandards', () => {
   it('names the extension that fails to load', () => {
     const root = tempTree({ 'package.json': { name: 'app' } });
     expect(() => loadStandards({ rootDir: root, extensions: ['./missing.mjs'] })).toThrow(/cannot load extension "\.\/missing\.mjs"/);
+  });
+});
+
+describe('facetOptions', () => {
+  it('calls an options function with the context and merges what it returns with plain options', () => {
+    const seen = [];
+    const extensions = [
+      { id: 'plain', eslint: { options: { primitivesGlobs: ['a/**/*.tsx'] } } },
+      { id: 'computed', eslint: { options: (ctx) => { seen.push(ctx); return { primitivesGlobs: [`${ctx.packageDir ?? '.'}/b/**/*.tsx`] }; } } },
+    ];
+    expect(facetOptions(extensions, 'eslint', { rootDir: '/repo', packageDir: 'pkg' })).toEqual({ primitivesGlobs: ['a/**/*.tsx', 'pkg/b/**/*.tsx'] });
+    expect(seen).toEqual([{ rootDir: '/repo', packageDir: 'pkg' }]);
+  });
+
+  it('gives an options function a rootDir when the caller passes no context', () => {
+    const extensions = [{ id: 'computed', stylelint: { options: (ctx) => ({ rootSeen: typeof ctx.rootDir }) } }];
+    expect(facetOptions(extensions, 'stylelint')).toEqual({ rootSeen: 'string' });
+  });
+});
+
+describe('the options context', () => {
+  it('holds the root alone when the run starts there', () => {
+    const root = tempTree({ 'package.json': { name: 'app' } });
+    expect(loadStandards({ rootDir: root }).context).toEqual({ rootDir: root });
+  });
+
+  it('holds the package dir it is given', () => {
+    const root = tempTree({ 'package.json': { name: 'app' }, 'packages/ui/package.json': { name: 'ui' } });
+    expect(loadStandards({ rootDir: root, packageDir: join(root, 'packages/ui') }).context).toEqual({ rootDir: root, packageDir: join(root, 'packages/ui') });
+  });
+
+  it('finds the workspace package that holds the working folder', () => {
+    const root = tempTree({ 'package.json': { name: 'app' }, 'packages/ui/package.json': { name: 'ui' }, 'packages/ui/src/a.ts': '' });
+    const before = process.cwd();
+    process.chdir(join(root, 'packages/ui/src'));
+    try {
+      expect(loadStandards({ rootDir: root }).context).toEqual({ rootDir: root, packageDir: join(root, 'packages/ui') });
+    } finally {
+      process.chdir(before);
+    }
   });
 });
 

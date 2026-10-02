@@ -5,7 +5,7 @@ Brock switches on its branch `agent/standards`. This page lists the exact change
 
 ## Tessera
 
-Tessera is a design system: it takes the `design-system` preset and lists the `usage-files` extension itself. It needs no Brock package for its rules after this change.
+Tessera is a design system: it takes the `design-system` preset and lists its own extension, `./standards.extension.mjs`, which reads `tessera.config.json` for the usage file check, `primitivesGlobs` and the theme token file. Standards ships no usage extension any more. It needs no Brock package for its rules after this change.
 
 ### devDependencies
 
@@ -39,7 +39,7 @@ import { defineStandards } from '@drizztdourden08/standards';
 
 export default defineStandards({
   presets: ['design-system'],
-  extensions: ['@drizztdourden08/standards/extensions/usage-files'],
+  extensions: ['./standards.extension.mjs'],
   options: {
     eslint: {
       rawControls: [
@@ -52,7 +52,7 @@ export default defineStandards({
 });
 ```
 
-`rawControls` keeps the messages that name Tessera's own components; without it the core messages name the design system in general. The `usage-files` line turns on the `Name.usage.ts` requirement: on the tree of 1 October 2026 it reports 137 component folders without one, and the repo has no usage file yet, so the line lands with the usage files or right after them.
+`rawControls` keeps the messages that name Tessera's own components; without it the core messages name the design system in general. Discovery reads dependencies only, so Tessera lists the extension its own `package.json` declares; every app that installs Tessera gets it with no line at all. The extension requires `Name.usage.ts` in the `parts` folders of `tessera.config.json` (`src/primitives` and `src/composites`), so the line lands with the usage files or right after them.
 
 ### eslint.config.mjs
 
@@ -67,7 +67,7 @@ export default defineStandards({
    defaultExportGlobs: ['.storylite/config.ts'],
 ```
 
-`primitivesGlobs` comes from the `design-system` preset with the same value; the rest of the file (consoleGlobs, glyphContent, inlineStyle) stays as it is. A read-only run of the new factory over the tree reports no file without the `@layer … @kind …` header.
+`primitivesGlobs` comes from Tessera's extension, built from the `parts` of `tessera.config.json`; the preset no longer names a folder; the rest of the file (consoleGlobs, glyphContent, inlineStyle) stays as it is. A read-only run of the new factory over the tree reports no file without the `@layer … @kind …` header.
 
 ### stylelint.config.mjs
 
@@ -146,7 +146,7 @@ jobs:
 
 ## Archipelia
 
-Archipelia is a Brock app workspace. It keeps `brock-lint-config` and `brock-build`, which now sit on standards, so its configs do not change: `brockEslint`, `brockStylelint` and `brockMarkdownlint` keep their names, and `brock structure` and `brock prose` keep their output. What changes is how it gets the packages.
+Archipelia is a Brock app workspace. It keeps `brock-lint-config` and `brock-build`, which now sit on standards, so its configs do not change: `brockEslint`, `brockStylelint` and `brockMarkdownlint` keep their names, and `brock structure` and `brock prose` keep their output. What changes is how it gets the packages. It lists no usage extension: installing Tessera is enough, and Tessera's extension reads the root `tessera.config.json` for the usage file check in `packages/design` and the views of each app, `primitivesGlobs` and the theme token file.
 
 ### Version ranges instead of link specs
 

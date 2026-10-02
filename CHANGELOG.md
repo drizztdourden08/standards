@@ -9,7 +9,8 @@
 - Presets `base`, `library`, `react-app` and `design-system`. The rules of hooks move from the core into `react-app`.
 - `local/file-header`: every source file opens with `/* @layer <layer> @kind <kind> */`.
 - The stylelint token rules read their token sheets from the `tokens` option; no package path is built in.
-- The usage-file rule ships as the opt-in extension `@drizztdourden08/standards/extensions/usage-files`.
+- `{Name}.usage.ts` is allowed in every component folder and required nowhere by the core; Tessera's extension requires it in the `parts` of `tessera.config.json` and supplies `primitivesGlobs`, so the `design-system` preset names no folder.
+- The `options` of an `eslint` or `stylelint` facet may be a function `({ rootDir, packageDir }) => options`, called by the factories with the repo root.
 - Rule ids stay: `local/*`, `BROCK001` to `BROCK006`, `brock/no-token-*`.
 
 ## 0.1.1

@@ -54,7 +54,7 @@ Each command loads its code on first use, so `standards prose` never loads ESLin
 | `base` | nothing: the quality, shape, boundary, header and writing rules and the generic structure checks |
 | `library` | keeps the boundary rules on for a published package without React |
 | `react-app` | the rules of hooks (`react-hooks/rules-of-hooks`) |
-| `design-system` | `react-app`, and `src/primitives/**/*.tsx` as the primitives tier that may use raw HTML and the `style` prop |
+| `design-system` | `react-app`; the primitives tier that may use raw HTML and the `style` prop comes from `primitivesGlobs` or from the design system's extension, Tessera's for a Tessera app |
 
 ## The extension API
 
@@ -94,10 +94,29 @@ export default defineExtension({
 | | `appMarkers` | files that make a workspace folder an app: no package name or barrel check |
 | `eslint` | `plugins`, `rules` | one flat-config block over every source file, after the core blocks |
 | | `configs` | flat-config blocks appended after the core exceptions |
-| | `options` | factory options: arrays join, objects merge, `rawControls` and `consoleGlobs` replace |
-| `stylelint` | `plugins`, `rules`, `options` | plugin paths, rules, factory options such as `tokens` |
+| | `options` | factory options, or a function `(ctx) => options` (see below): arrays join, objects merge, `rawControls` and `consoleGlobs` replace |
+| `stylelint` | `plugins`, `rules`, `options` | plugin paths, rules, factory options such as `tokens`, or a function that returns them |
 | `markdownlint` | `customRules`, `config` | markdownlint-cli2 custom rules and rule config |
 | `prose` | `banned`, `allow` | words the writing gate reports or skips, in ESLint, markdownlint and `standards prose` alike |
+
+### Options computed from the repo
+
+An extension loads once, when `require()` first reads it, and at that point it does not know which repo the factory lints. So the `options` of the `eslint` and `stylelint` facets may also be a function. The factories call it with the context of the run and merge what it returns like plain options:
+
+```js
+export default defineExtension({
+  id: 'kit',
+  eslint: { options: ({ rootDir, packageDir }) => ({ primitivesGlobs: primitivesOf(packageDir ?? rootDir) }) },
+  stylelint: { options: ({ rootDir }) => ({ tokenGlobs: [themeOf(rootDir)] }) },
+});
+```
+
+| Key | Value |
+|---|---|
+| `rootDir` | the `rootDir` given to `standardsEslint` or `standardsStylelint`, else the folder of the nearest `standards.config.mjs` or `pnpm-workspace.yaml` above the working folder, else the working folder |
+| `packageDir` | the `packageDir` given to the factory, else the workspace package below `rootDir` that holds the working folder; absent when the run starts at the root |
+
+A monorepo linted from its root gets `rootDir` alone and returns globs relative to it; a package that runs its own config gets its `packageDir` too. Plain-object options keep working, and both forms mix in one repo. `facetOptions(extensions, name, ctx)` exposes the same merge; without `ctx` it uses the nearest root above the working folder.
 
 The existing rule ids stay: `local/*` in ESLint, `BROCK001` to `BROCK006` in markdownlint, `brock/no-token-*` in stylelint, so disable comments keep working.
 
@@ -118,7 +137,7 @@ import { defineStandards } from '@drizztdourden08/standards';
 
 export default defineStandards({
   presets: ['design-system'],
-  extensions: ['@drizztdourden08/standards/extensions/usage-files', './tooling/standards.extension.mjs'],
+  extensions: ['./tooling/standards.extension.mjs'],
   options: {
     scope: '@acme',
     tokens: ['./src/tokens/index.css'],
@@ -131,9 +150,9 @@ export default defineStandards({
 
 Extensions load with `require()`, which Node 24 runs on ES modules, so the factories stay synchronous. An extension module has no top-level `await`.
 
-### The usage-files extension
+### Usage files
 
-`@drizztdourden08/standards/extensions/usage-files` makes `{Name}.usage.ts` required in every component folder outside `sub-components/`. The core allows the file everywhere and requires it nowhere, so a repo opts in by listing the extension.
+The core allows `{Name}.usage.ts` in every component folder and requires it nowhere. A design system that wants one in each of its parts says so in its own extension: Tessera's requires it in the `parts` folders of `tessera.config.json`, so a Tessera app gets the rule by installing Tessera. Discovery reads dependencies only, so the package that declares an extension lists it in its own repo: `extensions: ['./standards.extension.mjs']`.
 
 ## Templates and bases
 
