@@ -1,13 +1,16 @@
 {
-  "name": "@drizztdourden08/brock-lint-config",
-  "version": "0.1.1",
-  "description": "Brock lint stack: the local ESLint rules, the writing gate, stylelint token rules, markdownlint rules and the tsconfig bases every Brock repo extends.",
+  "name": "@drizztdourden08/standards",
+  "version": "1.0.0",
+  "description": "The shared rules of every drizztdourden08 repo: ESLint, stylelint and markdownlint rules, the writing gate, the structure and prose checks, tsconfig, knip and jscpd bases, templates and reusable workflows, with one extension API.",
   "type": "module",
   "license": "UNLICENSED",
+  "author": {
+    "name": "drizztdourden_",
+    "email": "drizztdourden08@users.noreply.github.com"
+  },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/drizztdourden08/brock.git",
-    "directory": "packages/lint-config"
+    "url": "git+https://github.com/drizztdourden08/standards.git"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
@@ -15,43 +18,95 @@
   "engines": {
     "node": ">=24"
   },
+  "packageManager": "pnpm@10.17.0",
+  "bin": {
+    "standards": "./bin/standards.mjs"
+  },
   "exports": {
-    ".": "./eslint.mjs",
-    "./eslint": "./eslint.mjs",
-    "./stylelint": "./stylelint.mjs",
-    "./markdownlint": "./markdownlint.mjs",
-    "./markdown-rules": "./markdown-rules.mjs",
-    "./slop-patterns": "./slop-patterns.mjs",
-    "./slop-line-kind": "./slop-line-kind.mjs",
+    ".": {
+      "types": "./types/index.d.mts",
+      "default": "./index.mjs"
+    },
+    "./eslint": "./eslint/index.mjs",
+    "./eslint/file-shape": "./eslint/file-shape.mjs",
+    "./eslint/rules": "./eslint/local-rules.mjs",
+    "./stylelint": "./stylelint/index.mjs",
+    "./stylelint/rules/*": "./stylelint/rules/*",
+    "./markdownlint": "./markdownlint/index.mjs",
+    "./markdownlint/rules": "./markdownlint/rules.mjs",
+    "./writing": "./writing/index.mjs",
+    "./writing/*": "./writing/*",
+    "./structure": "./structure/index.mjs",
+    "./prose": "./prose/index.mjs",
+    "./sync": "./sync/index.mjs",
+    "./presets/*": "./presets/*.mjs",
+    "./extensions/usage-files": "./extensions/usage-files/index.mjs",
     "./tsconfig/*": "./tsconfig/*",
-    "./stylelint-rules/*": "./stylelint-rules/*",
-    "./file-shape": "./file-shape.mjs"
+    "./knip/*": "./knip/*",
+    "./jscpd/*": "./jscpd/*",
+    "./templates/*": "./templates/*",
+    "./package.json": "./package.json"
   },
   "files": [
-    "*.mjs",
-    "rules",
+    "index.mjs",
+    "types",
+    "bin",
+    "cli",
+    "config",
+    "eslint",
+    "stylelint",
+    "markdownlint",
+    "writing",
+    "structure",
+    "prose",
+    "sync",
+    "presets",
+    "extensions",
     "tsconfig",
+    "knip",
+    "jscpd",
+    "templates",
+    "docs",
     "README.md",
-    "stylelint-rules",
-    "CHANGELOG.md"
+    "CHANGELOG.md",
+    "MIGRATION-CONSUMERS.md"
   ],
+  "scripts": {
+    "lint": "eslint . && node bin/standards.mjs prose && node bin/standards.mjs sync --check && knip && jscpd .",
+    "changeset": "changeset",
+    "lint:md": "markdownlint-cli2",
+    "test": "vitest run",
+    "sync": "node bin/standards.mjs sync --check"
+  },
   "peerDependencies": {
     "eslint": "^10.0.0",
-    "eslint-plugin-react-hooks": "^7.0.0",
-    "markdownlint-cli2": "^0.22.0",
     "stylelint": "^17.0.0",
-    "stylelint-config-standard": "^40.0.0",
-    "typescript-eslint": "^8.0.0"
+    "typescript": "^6.0.0"
   },
   "peerDependenciesMeta": {
-    "markdownlint-cli2": {
+    "stylelint": {
       "optional": true
     },
-    "stylelint-config-standard": {
+    "typescript": {
       "optional": true
     }
   },
   "dependencies": {
-    "@eslint/js": "^10.0.0"
-  }
+    "@eslint/js": "^10.0.1",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "jscpd": "^4.0.5 || ^5.0.0",
+    "knip": "^5.65.0 || ^6.0.0",
+    "markdownlint-cli2": "^0.22.1",
+    "stylelint-config-standard": "^40.0.0",
+    "typescript-eslint": "^8.60.1"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.31.1",
+    "@types/node": "^24.19.0",
+    "eslint": "10.11.0",
+    "stylelint": "17.15.0",
+    "typescript": "6.0.3",
+    "vitest": "^4.1.11"
+  },
+  "types": "./types/index.d.mts"
 }
