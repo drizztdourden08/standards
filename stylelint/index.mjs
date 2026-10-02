@@ -1,5 +1,6 @@
 /* @layer tooling-scripts @kind config */
 import { createRequire } from 'node:module';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadStandards } from '../config/load.mjs';
 import { facetOptions, facetsOf, mergeOptions } from '../config/merge.mjs';
@@ -40,7 +41,16 @@ const COMMENT_ALLOW = '^\\s*(@layer\\b|@kind\\b|stylelint-)';
 
 const PLUGINS = ['no-token-override', 'no-token-shadow'].map((name) => fileURLToPath(new URL(`./rules/${name}.mjs`, import.meta.url)));
 
-const STANDARD_CONFIG = createRequire(import.meta.url).resolve('stylelint-config-standard');
+const STANDARD_CONFIG = 'stylelint-config-standard';
+
+const standardConfigFor = (rootDir) => {
+  try {
+    createRequire(join(rootDir, 'package.json')).resolve(STANDARD_CONFIG);
+    return STANDARD_CONFIG;
+  } catch {
+    return createRequire(import.meta.url).resolve(STANDARD_CONFIG);
+  }
+};
 
 const tokenRules = (opts) => {
   const secondary = {
@@ -53,10 +63,11 @@ const tokenRules = (opts) => {
 };
 
 const resolveOptions = (input) => {
-  const { extensions, options: config } = loadStandards({ rootDir: input.rootDir, presets: input.presets, extensions: input.extensions, discover: input.discover });
+  const { rootDir, extensions, options: config } = loadStandards({ rootDir: input.rootDir, presets: input.presets, extensions: input.extensions, discover: input.discover });
   const facets = facetsOf(extensions, 'stylelint');
   const tokens = config.tokens ? { tokens: config.tokens } : {};
   return {
+    extendsConfig: standardConfigFor(input.rootDir ?? rootDir),
     opts: mergeOptions(facetOptions(extensions, 'stylelint'), tokens, config.stylelint, input),
     plugins: facets.flatMap((facet) => facet.plugins ?? []),
     rules: Object.assign({}, ...facets.map((facet) => facet.rules ?? {})),
@@ -76,7 +87,7 @@ const resolveOptions = (input) => {
  * @returns {Record<string, unknown>}
  */
 const standardsStylelint = (input = {}) => {
-  const { opts, plugins, rules: extensionRules } = resolveOptions(input);
+  const { opts, plugins, rules: extensionRules, extendsConfig } = resolveOptions(input);
   const scoped = [
     [opts.uiGlobs, TOKEN_ONLY_RULES],
     [opts.tokenGlobs, opts.rawValueGlobs?.length ? TOKEN_DERIVED_RULES : TOKEN_RULES_OFF],
@@ -85,7 +96,7 @@ const standardsStylelint = (input = {}) => {
   ];
   const overrides = scoped.filter(([files]) => files?.length).map(([files, rules]) => ({ files, rules }));
   return {
-    extends: STANDARD_CONFIG,
+    extends: extendsConfig,
     plugins: [...PLUGINS, ...plugins],
     reportDescriptionlessDisables: true,
     rules: {
