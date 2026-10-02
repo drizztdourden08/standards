@@ -3,16 +3,16 @@ import { existsSync, globSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, isAbsolute, join, resolve } from 'node:path';
 
-const TESSERA_TOKENS = '@drizztdourden08/tessera/tokens.css';
 const IMPORT = /@import\s+(?:url\()?\s*['"]?([^'")\s]+)['"]?\s*\)?/g;
 const DECLARATION = /(--[\w-]+)\s*:\s*([^;{}]+);/g;
 const cache = new Map();
 
-const tesseraTokensFile = (rootDir) => {
+const sourceFile = (rootDir, source) => {
+  if (isAbsolute(source) || source.startsWith('.')) return resolve(rootDir, source);
   const anchor = join(rootDir, 'package.json');
   if (!existsSync(anchor)) return null;
   try {
-    return createRequire(anchor).resolve(TESSERA_TOKENS);
+    return createRequire(anchor).resolve(source);
   } catch {
     return null;
   }
@@ -33,13 +33,15 @@ const followImports = (file, seen) => {
   return seen;
 };
 
-const tokenFiles = (rootDir, tokenGlobs) => {
+const tokenFiles = (rootDir, tokenGlobs, tokenSources) => {
   const seen = new Set();
   for (const glob of tokenGlobs) {
     for (const file of globSync(glob, { cwd: rootDir })) followImports(isAbsolute(file) ? file : join(rootDir, file), seen);
   }
-  const tessera = tesseraTokensFile(rootDir);
-  if (tessera) followImports(tessera, seen);
+  for (const source of tokenSources) {
+    const file = sourceFile(rootDir, source);
+    if (file) followImports(file, seen);
+  }
   return seen;
 };
 
@@ -72,12 +74,13 @@ const configRootFor = (file) => {
 /**
  * @param {string} rootDir
  * @param {string[]} tokenGlobs
+ * @param {string[]} [tokenSources] package specifiers or paths of token sheets
  * @returns {{ files: Set<string>, tokens: Map<string, { value: string, file: string }> }}
  */
-const tokenIndex = (rootDir, tokenGlobs) => {
-  const key = `${rootDir}::${tokenGlobs.join('|')}`;
+const tokenIndex = (rootDir, tokenGlobs, tokenSources = []) => {
+  const key = `${rootDir}::${tokenGlobs.join('|')}::${tokenSources.join('|')}`;
   if (!cache.has(key)) {
-    const files = tokenFiles(rootDir, tokenGlobs);
+    const files = tokenFiles(rootDir, tokenGlobs, tokenSources);
     cache.set(key, { files, tokens: readTokens(files) });
   }
   return cache.get(key);
@@ -85,13 +88,13 @@ const tokenIndex = (rootDir, tokenGlobs) => {
 
 /**
  * @param {{ source?: { input: { file?: string } } }} root
- * @param {{ rootDir?: string, tokenGlobs?: string[] }} secondary
+ * @param {{ rootDir?: string, tokenGlobs?: string[], tokenSources?: string[] }} secondary
  * @returns {{ tokens: Map<string, { value: string, file: string }> } | null} null when the sheet is a token file
  */
 const tokensForSheet = (root, secondary) => {
   const file = root.source?.input.file;
   if (!file) return null;
-  const { files, tokens } = tokenIndex(secondary.rootDir ?? configRootFor(file), secondary.tokenGlobs ?? []);
+  const { files, tokens } = tokenIndex(secondary.rootDir ?? configRootFor(file), secondary.tokenGlobs ?? [], secondary.tokenSources ?? []);
   return files.has(normalizePath(file)) ? null : { tokens };
 };
 

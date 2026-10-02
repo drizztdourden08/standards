@@ -30,6 +30,6 @@ const ruleFunction = (primary, secondary = {}) => (root, result) => {
 
 ruleFunction.ruleName = ruleName;
 ruleFunction.messages = messages;
-ruleFunction.meta = { url: 'https://github.com/drizztdourden08/brock/blob/master/docs/contributing/structure.md' };
+ruleFunction.meta = { url: 'https://github.com/drizztdourden08/standards/blob/main/docs/structure.md' };
 
 export default stylelint.createPlugin(ruleName, ruleFunction);

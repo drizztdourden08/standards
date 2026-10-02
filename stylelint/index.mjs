@@ -1,5 +1,8 @@
 /* @layer tooling-scripts @kind config */
+import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
+import { loadStandards } from '../config/load.mjs';
+import { facetOptions, facetsOf, mergeOptions } from '../config/merge.mjs';
 
 const QUERY_LENGTHS = ['width', 'min-width', 'max-width', 'height', 'min-height', 'max-height'];
 
@@ -37,24 +40,43 @@ const COMMENT_ALLOW = '^\\s*(@layer\\b|@kind\\b|stylelint-)';
 
 const PLUGINS = ['no-token-override', 'no-token-shadow'].map((name) => fileURLToPath(new URL(`./rules/${name}.mjs`, import.meta.url)));
 
+const STANDARD_CONFIG = createRequire(import.meta.url).resolve('stylelint-config-standard');
+
 const tokenRules = (opts) => {
-  const secondary = { severity: 'warning', tokenGlobs: opts.tokenGlobs ?? [], ...(opts.rootDir ? { rootDir: opts.rootDir } : {}) };
+  const secondary = {
+    severity: 'warning',
+    tokenGlobs: opts.tokenGlobs ?? [],
+    ...(opts.tokens?.length ? { tokenSources: opts.tokens } : {}),
+    ...(opts.rootDir ? { rootDir: opts.rootDir } : {}),
+  };
   return { 'brock/no-token-override': [true, secondary], 'brock/no-token-shadow': [true, secondary] };
 };
 
+const resolveOptions = (input) => {
+  const { extensions, options: config } = loadStandards({ rootDir: input.rootDir, presets: input.presets, extensions: input.extensions, discover: input.discover });
+  const facets = facetsOf(extensions, 'stylelint');
+  const tokens = config.tokens ? { tokens: config.tokens } : {};
+  return {
+    opts: mergeOptions(facetOptions(extensions, 'stylelint'), tokens, config.stylelint, input),
+    plugins: facets.flatMap((facet) => facet.plugins ?? []),
+    rules: Object.assign({}, ...facets.map((facet) => facet.rules ?? {})),
+  };
+};
+
 /**
- * @typedef {object} BrockStylelintOptions
+ * @typedef {object} StylelintTiers
  * @property {string[]} [uiGlobs] token-only stylesheets
- * @property {string[]} [tokenGlobs] token files; values derive via var(), color-mix(), calc()
- * @property {string[]} [rawValueGlobs] token files holding raw colours and lengths
- * @property {string[]} [exemptGlobs] documented exceptions to the token rules
- * @property {string} [commentAllow] regex source a CSS comment must match
- * @property {string} [rootDir] base of tokenGlobs, default the nearest config folder
- * @property {string[]} [ignoreFiles]
- * @property {Record<string, unknown>} [rules]
+ * @property {string[]} [tokenGlobs] token files; values derive via var()
+ * @property {string[]} [rawValueGlobs] token files holding raw values
+ * @property {string[]} [exemptGlobs] documented exceptions
+ * @property {string[]} [tokens] token sheets from packages or paths
  */
-/** @param {BrockStylelintOptions} [opts] */
-const brockStylelint = (opts = {}) => {
+/**
+ * @param {StylelintTiers & Record<string, any>} [input]
+ * @returns {Record<string, unknown>}
+ */
+const standardsStylelint = (input = {}) => {
+  const { opts, plugins, rules: extensionRules } = resolveOptions(input);
   const scoped = [
     [opts.uiGlobs, TOKEN_ONLY_RULES],
     [opts.tokenGlobs, opts.rawValueGlobs?.length ? TOKEN_DERIVED_RULES : TOKEN_RULES_OFF],
@@ -63,8 +85,8 @@ const brockStylelint = (opts = {}) => {
   ];
   const overrides = scoped.filter(([files]) => files?.length).map(([files, rules]) => ({ files, rules }));
   return {
-    extends: 'stylelint-config-standard',
-    plugins: PLUGINS,
+    extends: STANDARD_CONFIG,
+    plugins: [...PLUGINS, ...plugins],
     reportDescriptionlessDisables: true,
     rules: {
       'no-descending-specificity': null,
@@ -76,6 +98,7 @@ const brockStylelint = (opts = {}) => {
       'value-keyword-case': null,
       'comment-pattern': opts.commentAllow ?? COMMENT_ALLOW,
       ...tokenRules(opts),
+      ...extensionRules,
       ...(opts.rules ?? {}),
     },
     overrides,
@@ -83,4 +106,4 @@ const brockStylelint = (opts = {}) => {
   };
 };
 
-export { brockStylelint, TOKEN_ONLY_RULES, TOKEN_DERIVED_RULES, TOKEN_RULES_OFF, COMMENT_ALLOW, QUERY_LENGTHS };
+export { standardsStylelint, TOKEN_ONLY_RULES, TOKEN_DERIVED_RULES, TOKEN_RULES_OFF, COMMENT_ALLOW, QUERY_LENGTHS };
