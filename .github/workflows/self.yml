@@ -1,0 +1,27 @@
+name: self
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  gate:
+    uses: ./.github/workflows/ci.yml
+    permissions:
+      contents: read
+      packages: read
+    with:
+      scripts: lint lint:md test
+      sync-check: false
+
+  release:
+    if: github.event_name == 'push'
+    needs: gate
+    uses: ./.github/workflows/release.yml
+    permissions:
+      contents: write
+      packages: write
+      pull-requests: write

@@ -1,0 +1,55 @@
+name: ci
+
+on:
+  workflow_call:
+    inputs:
+      runs-on:
+        description: the runner label
+        type: string
+        default: windows-latest
+      node-version:
+        description: the Node major
+        type: string
+        default: '24'
+      scripts:
+        description: package scripts the gate runs in order, separated by spaces
+        type: string
+        default: lint lint:md structure test
+      sync-check:
+        description: also run standards sync --check (the repo has @drizztdourden08/standards as a direct dependency)
+        type: boolean
+        default: true
+
+jobs:
+  gate:
+    runs-on: ${{ inputs.runs-on }}
+    permissions:
+      contents: read
+      packages: read
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: pnpm
+          registry-url: https://npm.pkg.github.com
+          scope: '@drizztdourden08'
+      - run: pnpm install --frozen-lockfile
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Shared files and one copy of standards
+        if: ${{ inputs.sync-check }}
+        run: pnpm exec standards sync --check
+      - name: Gate scripts
+        env:
+          SCRIPTS: ${{ inputs.scripts }}
+        run: |
+          for script in $SCRIPTS; do
+            echo "::group::pnpm run $script"
+            pnpm run "$script"
+            echo "::endgroup::"
+          done
