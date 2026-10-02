@@ -1,4 +1,8 @@
 /* @layer tooling-scripts @kind config */
+import { DEFAULT_ALLOW } from '../writing/slop-patterns.mjs';
+import { loadStandards } from '../config/load.mjs';
+import { facetsOf, mergeOptions, proseWords } from '../config/merge.mjs';
+
 const STYLE_OFF = {
   MD013: false,
   MD033: false,
@@ -13,20 +17,35 @@ const STYLE_OFF = {
 
 const BASE_IGNORES = ['**/node_modules/**', '**/dist/**', '**/release/**', '**/out/**', '.worktrees/**'];
 
-const RULES_MODULE = '@drizztdourden08/brock-lint-config/markdown-rules';
+const RULES_MODULE = '@drizztdourden08/standards/markdownlint/rules';
+
+const WRITING_RULES = ['no-slop-prose', 'no-em-dash', 'no-smart-punctuation'];
+
+const writingConfig = ({ allow, banned }) => {
+  if (!allow.length && !banned.length) return {};
+  const options = { allow: [...DEFAULT_ALLOW, ...allow], ...(banned.length ? { banned } : {}) };
+  return Object.fromEntries(WRITING_RULES.map((rule) => [rule, options]));
+};
 
 /**
- * @param {{ ignores?: string[], globs?: string[], allow?: string[], config?: Record<string, unknown>}} [opts]
+ * @param {{ ignores?: string[], globs?: string[], allow?: string[], banned?: string[], config?: Record<string, unknown>, rootDir?: string }} [input]
+ * @returns {{ config: Record<string, unknown>, customRules: unknown[], globs: string[], ignores: string[] }}
  */
-const brockMarkdownlint = (opts = {}) => ({
-  config: {
-    ...STYLE_OFF,
-    ...(opts.allow ? { 'no-slop-prose': { allow: opts.allow }, 'no-em-dash': { allow: opts.allow }, 'no-smart-punctuation': { allow: opts.allow } } : {}),
-    ...(opts.config ?? {}),
-  },
-  customRules: [RULES_MODULE],
-  globs: opts.globs ?? ['**/*.md'],
-  ignores: [...BASE_IGNORES, ...(opts.ignores ?? [])],
-});
+const standardsMarkdownlint = (input = {}) => {
+  const { extensions, options: config } = loadStandards({ rootDir: input.rootDir, presets: input.presets, extensions: input.extensions, discover: input.discover });
+  const facets = facetsOf(extensions, 'markdownlint');
+  const opts = mergeOptions(config.markdownlint, input);
+  return {
+    config: {
+      ...STYLE_OFF,
+      ...writingConfig(proseWords(extensions, config, opts)),
+      ...Object.assign({}, ...facets.map((facet) => facet.config ?? {})),
+      ...(opts.config ?? {}),
+    },
+    customRules: [opts.rulesModule ?? RULES_MODULE, ...facets.flatMap((facet) => facet.customRules ?? [])],
+    globs: opts.globs ?? ['**/*.md'],
+    ignores: [...BASE_IGNORES, ...(opts.ignores ?? [])],
+  };
+};
 
-export { brockMarkdownlint, STYLE_OFF };
+export { standardsMarkdownlint, STYLE_OFF, RULES_MODULE };

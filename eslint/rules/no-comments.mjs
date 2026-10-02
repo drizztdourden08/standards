@@ -79,4 +79,4 @@ const noComments = {
   },
 };
 
-export { noComments, DEFAULT_COMMENT_ALLOW, JSDOC_MAX_LINES, JSDOC_MAX_TRAIL };
+export { noComments, DEFAULT_COMMENT_ALLOW };

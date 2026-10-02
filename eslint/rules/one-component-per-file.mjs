@@ -21,7 +21,7 @@ const nameOf = (wrapped) => {
 const oneComponentPerFile = {
   meta: { type: 'problem', docs: { description: 'One component per .tsx; a second one lives in sub-components/' }, schema: [] },
   create(context) {
-    if (hasKind(context.filename, SHAPE_OFF_KINDS)) return {};
+    if (hasKind(context.filename, SHAPE_OFF_KINDS, context.settings)) return {};
     const sourceCode = context.sourceCode;
     const components = new Map();
     const record = (node) => {

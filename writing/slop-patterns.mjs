@@ -129,7 +129,7 @@ const isIdentifierUse = (text, index, length) => {
 
 /**
  * @param {string} text
- * @param {{ allow?: string[], groups?: string[] }} [opts]
+ * @param {{ allow?: string[], banned?: string[], groups?: string[] }} [opts]
  * @returns {{ id: string, group: string, index: number, length: number, match: string, message: string }[]}
  */
 const headOf = (p, match) => {
@@ -169,10 +169,20 @@ const withoutOverlaps = (found) => {
   return out;
 };
 
+const bannedPattern = (banned) => ({
+  id: 'banned',
+  group: 'prose',
+  word: true,
+  re: w(banned.join('|')),
+  advice: 'This repo bans the word. Use a plain word, or delete it.',
+});
+
+const patternsFor = (banned) => (banned?.length ? [...PATTERNS, bannedPattern(banned)] : PATTERNS);
+
 const findSlop = (text, opts = {}) => {
   const allow = compileAllow(opts.allow ?? DEFAULT_ALLOW);
   const groups = opts.groups ?? GROUPS;
-  const found = PATTERNS.filter((p) => groups.includes(p.group)).flatMap((p) => hitsOf(p, text, allow));
+  const found = patternsFor(opts.banned).filter((p) => groups.includes(p.group)).flatMap((p) => hitsOf(p, text, allow));
   return withoutOverlaps(found);
 };
 

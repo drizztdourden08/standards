@@ -37,4 +37,4 @@ const noSlopIdentifiers = {
   },
 };
 
-export { noSlopIdentifiers, PREFIX, SUFFIX, PLACEHOLDER_NAMES };
+export { noSlopIdentifiers };

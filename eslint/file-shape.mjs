@@ -6,13 +6,12 @@ const FILE_KIND = {
   component: /\.tsx$/,
   story: /\.stories\.tsx?$|(^|\/)stories\//,
   test: /\.test\.tsx?$|(^|\/)tests\//,
-  config: /\.config\.(?:ts|mjs|cjs|js)$|(^|\/)brock\.config\.ts$/,
+  config: /\.config\.(?:ts|mjs|cjs|js)$/,
   entry: /(^|\/)(?:main|preload|splash)\.tsx?$/,
-  screen: /(^|\/)src\/screens\/.+\.(?:(?:hero|page|tab|card|custom|layer)\.tsx|settings\.ts)$/,
 };
 
 const SHAPE_OFF_KINDS = ['story', 'test', 'config'];
-const ONE_EXPORT_EXEMPT = ['barrel', 'types', 'constants', 'story', 'test', 'config', 'screen'];
+const ONE_EXPORT_EXEMPT = ['barrel', 'types', 'constants', 'story', 'test', 'config'];
 const GLOBAL_STYLESHEET = /(^|\/)(?:theme|tokens|reset|fonts)[^/]*\.css$|\/(?:theme|tokens)\//;
 const UPPER_SNAKE = /^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+$|^[A-Z]{2,}[A-Z0-9]*$/;
 const HOOK_NAME = /^use[A-Z]\w*$/;
@@ -20,16 +19,27 @@ const COMPONENT_NAME = /^[A-Z]\w*$/;
 
 const normalize = (file) => file.replace(/\\/g, '/');
 
-const kindsOf = (file) => {
-  const path = normalize(file);
-  return Object.entries(FILE_KIND).filter(([, re]) => re.test(path)).map(([kind]) => kind);
+const compiled = new WeakMap();
+
+const extraKinds = (settings) => {
+  const declared = settings?.standards?.fileKinds;
+  if (!declared) return [];
+  if (!compiled.has(declared)) compiled.set(declared, Object.entries(declared).map(([kind, sources]) => [kind, new RegExp([sources].flat().join('|'))]));
+  return compiled.get(declared);
 };
 
-const hasKind = (file, kinds) => kindsOf(file).some((kind) => kinds.includes(kind));
+const kindsOf = (file, settings) => {
+  const path = normalize(file);
+  return [...Object.entries(FILE_KIND), ...extraKinds(settings)].filter(([, re]) => re.test(path)).map(([kind]) => kind);
+};
+
+const hasKind = (file, kinds, settings) => kindsOf(file, settings).some((kind) => kinds.includes(kind));
+
+const oneExportExempt = (settings) => [...ONE_EXPORT_EXEMPT, ...(settings?.standards?.oneExportExempt ?? [])];
 
 const baseNameOf = (file) => normalize(file).split('/').at(-1)?.replace(/\.[^.]+$/, '') ?? '';
 
 const typeFileFor = (file) => `${baseNameOf(file)}.type.ts`;
 const constantsFileFor = (file) => `${baseNameOf(file)}.constants.ts`;
 
-export { FILE_KIND, SHAPE_OFF_KINDS, ONE_EXPORT_EXEMPT, GLOBAL_STYLESHEET, UPPER_SNAKE, HOOK_NAME, COMPONENT_NAME, normalize, kindsOf, hasKind, baseNameOf, typeFileFor, constantsFileFor };
+export { FILE_KIND, SHAPE_OFF_KINDS, ONE_EXPORT_EXEMPT, oneExportExempt, GLOBAL_STYLESHEET, UPPER_SNAKE, HOOK_NAME, COMPONENT_NAME, normalize, kindsOf, hasKind, baseNameOf, typeFileFor, constantsFileFor };

@@ -4,7 +4,7 @@ import { SHAPE_OFF_KINDS, UPPER_SNAKE, constantsFileFor, hasKind } from '../file
 const constantsInConstantsFile = {
   meta: { type: 'problem', docs: { description: 'UPPER_SNAKE constants live in *.constants.ts beside the implementation' }, schema: [] },
   create(context) {
-    if (hasKind(context.filename, ['constants', ...SHAPE_OFF_KINDS])) return {};
+    if (hasKind(context.filename, ['constants', ...SHAPE_OFF_KINDS], context.settings)) return {};
     return {
       'Program > VariableDeclaration[kind="const"] > VariableDeclarator, Program > ExportNamedDeclaration > VariableDeclaration[kind="const"] > VariableDeclarator'(node) {
         const name = node.id.type === 'Identifier' ? node.id.name : null;

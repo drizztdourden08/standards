@@ -84,4 +84,4 @@ const noGenericFolderNames = {
   },
 };
 
-export { noCrossPackageRelative, noDeepPackageImport, noGenericFolderNames, GENERIC_FOLDERS };
+export { noCrossPackageRelative, noDeepPackageImport, noGenericFolderNames };

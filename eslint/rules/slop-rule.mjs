@@ -5,7 +5,7 @@ const DIRECTIVE_COMMENT = /^\s*(eslint\b|eslint-|globals?\b|exported\b|@ts-|pret
 
 const SLOP_SCHEMA = [{
   type: 'object',
-  properties: { allow: { type: 'array', items: { type: 'string' } } },
+  properties: { allow: { type: 'array', items: { type: 'string' } }, banned: { type: 'array', items: { type: 'string' } } },
   additionalProperties: false,
 }];
 
@@ -14,8 +14,9 @@ const slopRule = (group, description) => ({
   create(context) {
     const sourceCode = context.sourceCode ?? context.getSourceCode();
     const allow = context.options?.[0]?.allow ?? DEFAULT_ALLOW;
+    const banned = context.options?.[0]?.banned;
     const scan = (start, text) => {
-      for (const hit of findSlop(text, { allow, groups: [group] })) {
+      for (const hit of findSlop(text, { allow, banned, groups: [group] })) {
         const at = start + hit.index;
         context.report({
           loc: { start: sourceCode.getLocFromIndex(at), end: sourceCode.getLocFromIndex(at + hit.length) },
@@ -50,4 +51,4 @@ const noEmDash = slopRule('dash', 'No em dash or en dash: rewrite the sentence')
 const noSmartPunctuation = slopRule('punct', 'No unicode ellipsis or curly quotes');
 const noSlopProse = slopRule('prose', 'No AI-writing phrases, connectors, slop words or filler adverbs');
 
-export { noEmDash, noSmartPunctuation, noSlopProse, slopRule };
+export { noEmDash, noSmartPunctuation, noSlopProse };

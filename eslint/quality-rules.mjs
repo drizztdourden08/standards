@@ -37,9 +37,9 @@ const NO_CLASS_COMPONENT = {
 };
 
 const RAW_CONTROLS = [
-  { selector: "JSXOpeningElement[name.name='input']", message: 'No raw <input> outside primitives. Use TextInput / NumberInput / Checkbox / RangeInput.' },
-  { selector: "JSXOpeningElement[name.name='select']", message: 'No raw <select> outside primitives. Use Select / NativeSelect.' },
-  { selector: "JSXOpeningElement[name.name='textarea']", message: 'No raw <textarea> outside primitives. Use TextArea.' },
+  { selector: "JSXOpeningElement[name.name='input']", message: 'No raw <input> outside primitives. Use the text, number, checkbox or range input of the design system.' },
+  { selector: "JSXOpeningElement[name.name='select']", message: 'No raw <select> outside primitives. Use the select of the design system.' },
+  { selector: "JSXOpeningElement[name.name='textarea']", message: 'No raw <textarea> outside primitives. Use the text area of the design system.' },
 ];
 
 const RESTRICTED_SYNTAX = [NO_INLINE_EXPORT, NO_DEFAULT_EXPORT, NO_REACT_FC, NO_AS_ANY, NO_DOUBLE_CAST, NO_ENUM, NO_CLASS_COMPONENT];

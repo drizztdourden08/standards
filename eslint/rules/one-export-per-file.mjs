@@ -1,12 +1,12 @@
 /* @layer tooling-scripts @kind logic */
-import { ONE_EXPORT_EXEMPT, hasKind } from '../file-shape.mjs';
+import { hasKind, oneExportExempt } from '../file-shape.mjs';
 
 const valueSpecifiers = (node) => (node.specifiers ?? []).filter((s) => s.exportKind !== 'type');
 
 const oneExportPerFile = {
   meta: { type: 'problem', docs: { description: 'An implementation file exports one value; lists live in index.ts, *.type.ts and *.constants.ts' }, schema: [] },
   create(context) {
-    if (hasKind(context.filename, ONE_EXPORT_EXEMPT)) return {};
+    if (hasKind(context.filename, oneExportExempt(context.settings), context.settings)) return {};
     const exported = [];
     return {
       ExportNamedDeclaration(node) {

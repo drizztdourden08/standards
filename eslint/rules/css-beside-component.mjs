@@ -4,7 +4,7 @@ import { GLOBAL_STYLESHEET, SHAPE_OFF_KINDS, baseNameOf, hasKind } from '../file
 const cssBesideComponent = {
   meta: { type: 'problem', docs: { description: 'A component imports only its own stylesheet, ./Name.css; global sheets live in theme/ or tokens/' }, schema: [] },
   create(context) {
-    if (hasKind(context.filename, ['entry', ...SHAPE_OFF_KINDS])) return {};
+    if (hasKind(context.filename, ['entry', ...SHAPE_OFF_KINDS], context.settings)) return {};
     const own = `./${baseNameOf(context.filename)}.css`;
     return {
       ImportDeclaration(node) {

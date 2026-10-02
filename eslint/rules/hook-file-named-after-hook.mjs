@@ -4,7 +4,7 @@ import { HOOK_NAME, SHAPE_OFF_KINDS, baseNameOf, hasKind } from '../file-shape.m
 const hookFileNamedAfterHook = {
   meta: { type: 'problem', docs: { description: 'A hook lives alone in a file named after it: behavior/useThing.ts' }, schema: [] },
   create(context) {
-    if (hasKind(context.filename, SHAPE_OFF_KINDS)) return {};
+    if (hasKind(context.filename, SHAPE_OFF_KINDS, context.settings)) return {};
     const fileName = baseNameOf(context.filename);
     return {
       'Program > VariableDeclaration > VariableDeclarator, Program > ExportNamedDeclaration > VariableDeclaration > VariableDeclarator, Program > FunctionDeclaration'(node) {

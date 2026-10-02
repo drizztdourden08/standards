@@ -26,9 +26,10 @@ const makeRule = (id, name, group, description) => ({
   parser: 'none',
   function: (params, onError) => {
     const allow = params.config?.allow ?? DEFAULT_ALLOW;
+    const banned = params.config?.banned;
     const lines = maskCode(params.lines);
     lines.forEach((line, i) => {
-      for (const hit of findSlop(line, { allow, groups: [group] })) {
+      for (const hit of findSlop(line, { allow, banned, groups: [group] })) {
         onError({
           lineNumber: i + 1,
           detail: hit.message,
