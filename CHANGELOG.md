@@ -1,9 +1,17 @@
-# @drizztdourden08/brock-lint-config
+# @drizztdourden08/standards
+
+## 1.0.0
+
+### Major Changes
+
+- The rules Brock and Tessera shared move into one package above both, with the history of `brock-lint-config`. It holds the ESLint factory and rules, the stylelint token rules, the markdownlint rules, the writing gate and its word lists, the structure and prose checks from `brock-build`, tsconfig, knip and jscpd bases, the `.npmrc` and changeset templates, the reusable CI and release workflows, and the `standards lint | structure | prose | sync --check` command.
+- One extension API: `structure`, `eslint`, `stylelint`, `markdownlint` and `prose` facets, loaded as core, presets, extensions declared by installed dependencies, then explicit ones from `standards.config.mjs`.
+- Presets `base`, `library`, `react-app` and `design-system`. The rules of hooks move from the core into `react-app`.
+- `local/file-header`: every source file opens with `/* @layer <layer> @kind <kind> */`.
+- The stylelint token rules read their token sheets from the `tokens` option; no package path is built in.
+- The usage-file rule ships as the opt-in extension `@drizztdourden08/standards/extensions/usage-files`.
+- Rule ids stay: `local/*`, `BROCK001` to `BROCK006`, `brock/no-token-*`.
 
 ## 0.1.1
 
-### Patch Changes
-
-- 068a02d: Screens by convention: files in src/screens become bucket hubs, pages, tabs, settings pages, cards and custom screens through a generated .brock/screens.ts, with the menu, bucket switch, Escape home and settings placement read from screens.config.ts. brock structure checks the layout, the review opens every generated screen, and the template app uses it.
-- b1fa12d: Breaking: a full-bleed screen at the root of src/screens is now `<id>.layer.tsx`, and `<page>.custom.tsx` names a custom page inside a bucket; migration custom-layer-rename renames each root `.custom.tsx` and lists it in the report, and knip-custom-pages adds custom pages to the knip entries. Search now reads one index for the palette and every hub: `brock sync` and the dev server write `.brock/search.ts` from the screens, their `meta.keywords`, the settings rows and each custom page's `searchEntries`, without loading any page, and modules, widgets, the menu, actions and `useSearchEntries` join at runtime. Generated hubs have search on, grouped by page, Ctrl+K inside a hub focuses it, a result opens its page and flashes its row, `brock structure` fails a custom page without `searchEntries` and counts them per bucket, and the review searches a sample from each source in the palette and in a hub.
-- 14c3674: The splash window is now the only loading screen. It has no frame, border, radius or shadow, a gradient from `product.look` (else the Tessera brand gradient, else the palette seeds through `resolveLook`), the brand mark without its tile, the app name, a status line, a bottom progress bar and the version. The app window stays hidden at its restored bounds until every boot task is done and the home screen has painted, then the two crossfade over 220 ms. Boot tasks are standard: `defineBootTask` in `src/boot/<id>.task.ts` and `electron/boot/<id>.task.ts`, listed by `brock sync` in `.brock/boot.*.ts`, plus module `bootTasks`, run in order with timeouts and weighted progress. A failed task or the watchdog shows the error on the splash with Retry, Open logs and Quit. The boot splash inside `index.html`, `BootProgressBar`, `bootProgress` and `window:shellReady` are gone. `--screenshot-splash=<name>` captures the splash, and the review checks that the splash closed, the app stayed hidden during boot and no loading overlay is left in the app.
+Released as `@drizztdourden08/brock-lint-config` inside Brock; see Brock's changelog.

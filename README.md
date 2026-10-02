@@ -1,43 +1,153 @@
 <!-- @layer docs @kind doc -->
-# brock-lint-config
+# @drizztdourden08/standards
 
-The lint stack every Brock repo runs: the local ESLint rules and the writing gate, stylelint token rules, markdownlint rules, and the tsconfig bases.
+The rules every drizztdourden08 repo shares, in one package: the ESLint rules and factory, the stylelint token rules, the markdownlint rules, the writing gate and its word lists, the structure and prose checks, tsconfig, knip and jscpd bases, the `.npmrc` and changeset templates, and the reusable CI and release workflows. A repo extends it with only what it adds, through one extension API.
+
+The structure guide is [docs/structure.md](docs/structure.md). Moving a repo onto the package is in [MIGRATION-CONSUMERS.md](MIGRATION-CONSUMERS.md).
+
+## Install
+
+```sh
+pnpm add -D @drizztdourden08/standards eslint stylelint typescript
+```
+
+`eslint`, `stylelint` and `typescript` are peers. `knip`, `jscpd` and `markdownlint-cli2` come with the package; `standards lint` runs the repo's own copy when it has one.
 
 ## Use
 
 ```js
 // eslint.config.mjs
-import { brockEslint } from '@drizztdourden08/brock-lint-config';
-export default brockEslint({ primitivesGlobs: ['src/ui/primitives/**/*.tsx'], allow: ['enhanced'] });
+import { standardsEslint } from '@drizztdourden08/standards/eslint';
+export default standardsEslint({ presets: ['react-app'], primitivesGlobs: ['src/ui/primitives/**/*.tsx'], allow: ['enhanced'] });
 
 // stylelint.config.mjs
-import { brockStylelint } from '@drizztdourden08/brock-lint-config/stylelint';
-export default brockStylelint({ uiGlobs: ['src/**/*.css'], tokenGlobs: ['src/theme/**/*.css'] });
+import { standardsStylelint } from '@drizztdourden08/standards/stylelint';
+export default standardsStylelint({ uiGlobs: ['src/**/*.css'], tokenGlobs: ['src/theme/**/*.css'], tokens: ['@acme/kit/tokens.css'] });
 
 // .markdownlint-cli2.mjs
-import { brockMarkdownlint } from '@drizztdourden08/brock-lint-config/markdownlint';
-export default brockMarkdownlint({ ignores: ['vendor/**'] });
+import { standardsMarkdownlint } from '@drizztdourden08/standards/markdownlint';
+export default standardsMarkdownlint({ ignores: ['vendor/**'] });
 ```
 
 ```json
-// tsconfig.json
-{ "extends": "@drizztdourden08/brock-lint-config/tsconfig/react.json", "include": ["src"] }
+{ "extends": "@drizztdourden08/standards/tsconfig/react.json", "include": ["src"] }
 ```
 
-## Rules
+Each factory returns its config synchronously, so a config file default-exports it as is.
 
-| Rule | Blocks |
+## The command
+
+```
+standards lint                 typecheck, eslint, stylelint, prose, knip and jscpd; every step runs, the failures are listed at the end
+standards structure [--check]  package names, barrels, folder names, depth, component and module folder shapes
+standards prose                the writing gate over every tracked text file the other linters skip
+standards sync --check         .npmrc, the changeset config, .jscpd.json and knip.json against the templates,
+                               and a failure when two copies of @drizztdourden08/standards resolve in one install
+```
+
+Each command loads its code on first use, so `standards prose` never loads ESLint.
+
+## Presets
+
+| Preset | Adds to the core |
 |---|---|
-| `local/no-raw-html` (warn) | a lowercase JSX tag outside `primitivesGlobs` |
-| `local/no-raw-color` | a hex, rgb() or hsl() literal in an inline style object |
-| `local/no-as-element-with-primitive` | `as="button"` and friends when a primitive exists |
-| `local/no-static-inline-style` | a fully static `style={{...}}` object |
-| `local/no-em-dash` / `BROCK001` | em dash, en dash |
-| `local/no-smart-punctuation` / `BROCK002` | unicode ellipsis, curly quotes |
-| `local/no-slop-prose` / `BROCK003` | stock phrases, connectors, slop words, filler adverbs, `ensure` as a verb |
-| `func-style` | `function` declarations; arrow functions only |
-| `no-restricted-syntax` | inline `export`; raw `input`, `select`, `textarea` outside primitives |
+| `base` | nothing: the quality, shape, boundary, header and writing rules and the generic structure checks |
+| `library` | keeps the boundary rules on for a published package without React |
+| `react-app` | the rules of hooks (`react-hooks/rules-of-hooks`) |
+| `design-system` | `react-app`, and `src/primitives/**/*.tsx` as the primitives tier that may use raw HTML and the `style` prop |
 
-None of the writing rules has an auto-fix. Rewrite the sentence.
+## The extension API
 
-A domain word the gate should skip goes in the factory's `allow`. A lowercase entry matches any casing; an entry with a capital matches only that casing.
+An extension is a plain object with an `id` and any of five facets. `defineExtension` checks the shape and returns it.
+
+```js
+// node_modules/@acme/module-widgets/standards.extension.mjs
+import { defineExtension } from '@drizztdourden08/standards';
+
+export default defineExtension({
+  id: 'module-widgets',
+  structure: {
+    componentFiles: [{ file: '{Name}.preview.ts', required: false }],
+    moduleFiles: [{ pattern: /^[a-z][a-z0-9-]*\.widget\.ts$/, label: '<id>.widget.ts' }],
+    appMarkers: ['widgets.config.ts'],
+    ownedDirs: (packageDir) => [`${packageDir}/src/widgets`],
+    checks: [async ({ label, kind }) => (kind === 'app' ? [`${label}: no widgets.config.ts`] : [])],
+  },
+  eslint: {
+    plugins: {},
+    rules: {},
+    configs: [{ files: ['**/*.widget.ts'], rules: { 'max-lines': ['error', 120] } }],
+    options: { defaultExportGlobs: ['**/*.widget.ts'] },
+  },
+  stylelint: { plugins: [], rules: {}, options: { tokens: ['@acme/kit/tokens.css'] } },
+  markdownlint: { customRules: [], config: {} },
+  prose: { banned: ['frobnicate'], allow: ['widgetize'] },
+});
+```
+
+| Facet | Key | What it does |
+|---|---|---|
+| `structure` | `componentFiles` | `{ file, required?, reason? }` with `{Name}` for the folder name: allowed in every component folder, and required outside `sub-components/` when `required` is true |
+| | `moduleFiles` | a `RegExp`, or `{ pattern, label }`; the label joins the list a finding prints |
+| | `ownedDirs` | `(packageDir) => string[]`, folders the extension checks itself; the generic shape walk skips them |
+| | `checks` | `(ctx) => string[]` or `{ findings, notes }`, sync or async; `ctx` is `{ rootDir, packageDir, label, pkg, kind }` with `kind` `'app'` or `'package'` |
+| | `appMarkers` | files that make a workspace folder an app: no package name or barrel check |
+| `eslint` | `plugins`, `rules` | one flat-config block over every source file, after the core blocks |
+| | `configs` | flat-config blocks appended after the core exceptions |
+| | `options` | factory options: arrays join, objects merge, `rawControls` and `consoleGlobs` replace |
+| `stylelint` | `plugins`, `rules`, `options` | plugin paths, rules, factory options such as `tokens` |
+| `markdownlint` | `customRules`, `config` | markdownlint-cli2 custom rules and rule config |
+| `prose` | `banned`, `allow` | words the writing gate reports or skips, in ESLint, markdownlint and `standards prose` alike |
+
+The existing rule ids stay: `local/*` in ESLint, `BROCK001` to `BROCK006` in markdownlint, `brock/no-token-*` in stylelint, so disable comments keep working.
+
+### Where extensions come from
+
+Four layers load in this order, and the first extension of each `id` wins:
+
+1. the core, always;
+2. presets, from the factory call and from `standards.config.mjs`;
+3. extensions found automatically: any dependency, devDependency or peerDependency of the root `package.json` or of a workspace package whose own `package.json` has `"standards": { "extension": "./standards.extension.mjs" }`;
+4. explicit extensions, from `standards.config.mjs` and then from the factory call.
+
+Installing a package that declares an extension is enough; no config changes. A repo that wants none turns discovery off with `discover: false`.
+
+```js
+// standards.config.mjs, optional, at the repo root
+import { defineStandards } from '@drizztdourden08/standards';
+
+export default defineStandards({
+  presets: ['design-system'],
+  extensions: ['@drizztdourden08/standards/extensions/usage-files', './tooling/standards.extension.mjs'],
+  options: {
+    scope: '@acme',
+    tokens: ['./src/tokens/index.css'],
+    allow: ['widgetize'],
+    eslint: { typed: true },
+    lint: { stylelint: ['src/**/*.css'], skip: ['typecheck'] },
+  },
+});
+```
+
+Extensions load with `require()`, which Node 24 runs on ES modules, so the factories stay synchronous. An extension module has no top-level `await`.
+
+### The usage-files extension
+
+`@drizztdourden08/standards/extensions/usage-files` makes `{Name}.usage.ts` required in every component folder outside `sub-components/`. The core allows the file everywhere and requires it nowhere, so a repo opts in by listing the extension.
+
+## Templates and bases
+
+| Path | Use |
+|---|---|
+| `tsconfig/base.json`, `node.json`, `react.json` | `extends` targets |
+| `knip/base.json`, `jscpd/base.json` | the shared keys `standards sync --check` compares |
+| `templates/npmrc`, `templates/changeset-config.json` | the `.npmrc` lines and changeset keys every repo carries |
+| `.github/workflows/ci.yml`, `release.yml` | reusable workflows (`workflow_call`) |
+
+```yaml
+jobs:
+  gate:
+    uses: drizztdourden08/standards/.github/workflows/ci.yml@v1
+    with:
+      scripts: lint lint:md structure test
+```
