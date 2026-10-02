@@ -1,5 +1,5 @@
 /* @layer tooling-scripts @kind logic */
-import { DEFAULT_ALLOW, findSlop } from '../slop-patterns.mjs';
+import { DEFAULT_ALLOW, findSlop } from '../../writing/slop-patterns.mjs';
 
 const DIRECTIVE_COMMENT = /^\s*(eslint\b|eslint-|globals?\b|exported\b|@ts-|prettier-|istanbul\b|c8\b|v8\b|@jsx\b|#!)/;
 

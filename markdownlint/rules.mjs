@@ -1,5 +1,5 @@
 /* @layer tooling-scripts @kind logic */
-import { DEFAULT_ALLOW, findSlop } from './slop-patterns.mjs';
+import { DEFAULT_ALLOW, findSlop } from '../writing/slop-patterns.mjs';
 
 const FENCE = /^\s{0,3}(`{3,}|~{3,})/;
 const INLINE_CODE = /`+[^`]*`+/g;

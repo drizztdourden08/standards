@@ -35,7 +35,7 @@ const TOKEN_DERIVED_RULES = {
 
 const COMMENT_ALLOW = '^\\s*(@layer\\b|@kind\\b|stylelint-)';
 
-const PLUGINS = ['no-token-override', 'no-token-shadow'].map((name) => fileURLToPath(new URL(`./stylelint-rules/${name}.mjs`, import.meta.url)));
+const PLUGINS = ['no-token-override', 'no-token-shadow'].map((name) => fileURLToPath(new URL(`./rules/${name}.mjs`, import.meta.url)));
 
 const tokenRules = (opts) => {
   const secondary = { severity: 'warning', tokenGlobs: opts.tokenGlobs ?? [], ...(opts.rootDir ? { rootDir: opts.rootDir } : {}) };

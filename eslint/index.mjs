@@ -2,7 +2,7 @@
 import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import reactHooks from 'eslint-plugin-react-hooks';
-import { DEFAULT_ALLOW } from './slop-patterns.mjs';
+import { DEFAULT_ALLOW } from '../writing/slop-patterns.mjs';
 import { noRawHtml } from './rules/no-raw-html.mjs';
 import { noRawColor } from './rules/no-raw-color.mjs';
 import { noInlineStyle } from './rules/no-inline-style.mjs';
