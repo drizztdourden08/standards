@@ -1,4 +1,6 @@
 /* @layer tooling-scripts @kind logic */
+import { findRoot } from './load.mjs';
+
 const REPLACED = new Set(['rawControls', 'consoleGlobs']);
 
 const isPlainObject = (value) => value !== null && typeof value === 'object' && Object.getPrototypeOf(value) === Object.prototype;
@@ -30,11 +32,19 @@ const mergeOptions = (...layers) => {
 const facetsOf = (extensions, name) => extensions.map((extension) => extension[name]).filter(Boolean);
 
 /**
+ * @param {unknown} options an object, or a function of the context
+ * @param {{ rootDir: string, packageDir?: string }} ctx
+ * @returns {Record<string, unknown> | undefined}
+ */
+const optionsFor = (options, ctx) => (typeof options === 'function' ? options(ctx) : options);
+
+/**
  * @param {{ id: string }[]} extensions
  * @param {string} name
+ * @param {{ rootDir: string, packageDir?: string }} [ctx] the context of an options function
  * @returns {Record<string, unknown>}
  */
-const facetOptions = (extensions, name) => mergeOptions(...facetsOf(extensions, name).map((facet) => facet.options));
+const facetOptions = (extensions, name, ctx = { rootDir: findRoot() }) => mergeOptions(...facetsOf(extensions, name).map((facet) => optionsFor(facet.options, ctx)));
 
 /**
  * @param {{ id: string }[]} extensions

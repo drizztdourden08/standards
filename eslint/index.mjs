@@ -14,9 +14,9 @@ import { tsBlock, jsBlock, settingsBlocks, exceptionBlocks, extensionRuleBlocks,
  * @returns {import('eslint').Linter.Config[]}
  */
 const standardsEslint = (input = {}) => {
-  const { extensions, options: config } = loadStandards({ rootDir: input.rootDir, presets: input.presets, extensions: input.extensions, discover: input.discover });
+  const { context, extensions, options: config } = loadStandards({ rootDir: input.rootDir, packageDir: input.packageDir, presets: input.presets, extensions: input.extensions, discover: input.discover });
   const facets = facetsOf(extensions, 'eslint');
-  const opts = mergeOptions(facetOptions(extensions, 'eslint'), config.eslint, input);
+  const opts = mergeOptions(facetOptions(extensions, 'eslint', context), config.eslint, input);
   const words = proseWords(extensions, config, opts);
   const shared = {
     rules: {

@@ -39,6 +39,13 @@ describe('token sources', () => {
     expect(await warningsOf(root, config)).toContain('brock/no-token-override');
   });
 
+  it('takes token globs from an options function given the root', async () => {
+    const root = tempTree({ ...files, 'src/card.css': `${HEADER}.card { padding: 4px; }\n` });
+    const extension = { id: 'theme', stylelint: { options: ({ rootDir }) => ({ tokenGlobs: rootDir === root ? ['src/card.css'] : [] }) } };
+    const config = standardsStylelint({ rootDir: root, uiGlobs: ['src/**/*.css'], extensions: [extension] });
+    expect(config.overrides.at(-1)).toEqual({ files: ['src/card.css'], rules: expect.objectContaining({ 'unit-disallowed-list': null }) });
+  });
+
   it('flags a raw length in a token-only sheet', async () => {
     const root = tempTree({ ...files, 'src/card.css': `${HEADER}.card { padding: 4px; }\n` });
     const config = standardsStylelint({ rootDir: root, uiGlobs: ['src/**/*.css'] });

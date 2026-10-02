@@ -37,18 +37,29 @@ export interface StructureFacet {
   appMarkers?: string[];
 }
 
+/** what an options function receives */
+export interface OptionsContext {
+  /** the rootDir given to the factory, else the nearest standards.config.mjs or pnpm-workspace.yaml above the working folder */
+  rootDir: string;
+  /** the packageDir given to the factory, else the workspace package below rootDir that holds the working folder */
+  packageDir?: string;
+}
+
+/** plain options, or a function of the run that returns them */
+export type FacetOptions<T> = Partial<T> | ((ctx: OptionsContext) => Partial<T>);
+
 export interface EslintFacet {
   plugins?: Record<string, unknown>;
   rules?: Linter.RulesRecord;
   configs?: Linter.Config[];
   /** merged into the factory options: arrays join, rawControls and consoleGlobs replace */
-  options?: Partial<EslintOptions>;
+  options?: FacetOptions<EslintOptions>;
 }
 
 export interface StylelintFacet {
   plugins?: string[];
   rules?: Record<string, unknown>;
-  options?: Partial<StylelintOptions>;
+  options?: FacetOptions<StylelintOptions>;
 }
 
 export interface MarkdownlintFacet {
@@ -97,6 +108,7 @@ export interface Justified {
 
 export interface Loading {
   rootDir?: string;
+  packageDir?: string;
   presets?: string[];
   extensions?: (string | Extension)[];
   discover?: boolean;
@@ -136,6 +148,7 @@ export interface StylelintOptions extends Loading {
 
 export declare const defineExtension: (extension: Extension) => Extension;
 export declare const defineStandards: (config: StandardsConfig) => StandardsConfig;
-export declare const loadStandards: (input?: Loading) => { rootDir: string; options: NonNullable<StandardsConfig['options']>; extensions: Extension[] };
+export declare const loadStandards: (input?: Loading) => { rootDir: string; context: OptionsContext; options: NonNullable<StandardsConfig['options']>; extensions: Extension[] };
+export declare const facetOptions: (extensions: Extension[], name: 'eslint' | 'stylelint', ctx?: OptionsContext) => Record<string, unknown>;
 export declare const findRoot: (fromDir?: string) => string;
 export declare const discoverExtensions: (rootDir: string) => string[];

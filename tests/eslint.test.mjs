@@ -71,6 +71,22 @@ describe('extension options', () => {
     expect((await lint(root, 'src/home.ts', code, options)).filter((m) => m.startsWith('local/one-export'))).toHaveLength(1);
   });
 
+  it('computes the options of a facet from the repo root', async () => {
+    const root = tempTree({ 'package.json': { name: 'x' } });
+    const roots = [];
+    const extension = { id: 'parts', eslint: { options: ({ rootDir }) => { roots.push(rootDir); return { primitivesGlobs: ['ui/**/*.tsx'] }; } } };
+    const code = `${HEADER}const A = () => <div />;\n\nexport { A };\n`;
+    expect((await lint(root, 'ui/A.tsx', code, { extensions: [extension] })).filter((m) => m.startsWith('local/no-raw-html'))).toEqual([]);
+    expect((await lint(root, 'src/A.tsx', code, { extensions: [extension] })).filter((m) => m.startsWith('local/no-raw-html'))).toHaveLength(1);
+    expect(roots).toEqual([root, root]);
+  });
+
+  it('allows raw HTML nowhere with the design-system preset alone', async () => {
+    const root = tempTree({ 'package.json': { name: 'x' } });
+    const code = `${HEADER}const A = () => <div />;\n\nexport { A };\n`;
+    expect((await lint(root, 'src/primitives/A/A.tsx', code, { presets: ['design-system'] })).filter((m) => m.startsWith('local/no-raw-html'))).toHaveLength(1);
+  });
+
   it('turns on the rules of hooks with the react-app preset', async () => {
     const root = tempTree({ 'package.json': { name: 'x' } });
     const code = `${HEADER}import { useState } from 'react';\n\nconst f = (on: boolean) => { if (on) useState(0); };\n\nexport { f };\n`;

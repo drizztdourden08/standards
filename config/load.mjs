@@ -4,6 +4,7 @@ import { createRequire } from 'node:module';
 import { dirname, isAbsolute, join, resolve } from 'node:path';
 import { discoverExtensions } from './discover.mjs';
 import { defineExtension } from './define.mjs';
+import { optionsContext } from './context.mjs';
 
 const OWN_ROOT = resolve(import.meta.dirname, '..');
 const OWN_NAME = '@drizztdourden08/standards';
@@ -77,14 +78,14 @@ const entriesFor = (rootDir, config, input) => [
 ];
 
 /**
- * @param {{ rootDir?: string, presets?: string[], extensions?: unknown[], discover?: boolean }} [input] rootDir, else the nearest root above cwd
- * @returns {{ rootDir: string, options: Record<string, any>, extensions: Record<string, any>[] }}
+ * @param {{ rootDir?: string, packageDir?: string, presets?: string[], extensions?: unknown[], discover?: boolean }} [input] rootDir, else the nearest root above cwd
+ * @returns {{ rootDir: string, context: { rootDir: string, packageDir?: string }, options: Record<string, any>, extensions: Record<string, any>[] }}
  */
 const loadStandards = (input = {}) => {
   const rootDir = input.rootDir ? resolve(input.rootDir) : findRoot();
   const config = readConfig(rootDir);
   const extensions = byFirstId(entriesFor(rootDir, config, input).map((entry) => loadEntry(entry, rootDir)));
-  return { rootDir, options: config.options ?? {}, extensions };
+  return { rootDir, context: optionsContext(rootDir, input), options: config.options ?? {}, extensions };
 };
 
 export { loadStandards, findRoot, PRESETS, OWN_ROOT };

@@ -1,5 +1,8 @@
 /* @layer tooling-scripts @kind test */
+import { mkdirSync, symlinkSync } from 'node:fs';
+import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { loadStandards } from '../config/load.mjs';
 import { discoverExtensions } from '../config/discover.mjs';
 import { runStructure } from '../structure/index.mjs';
 import { runProse } from '../prose/index.mjs';
@@ -75,6 +78,19 @@ describe('installing a module is enough', () => {
     const lines = captured();
     expect(runProse({ rootDir: root })).toBe(1);
     expect(lines.some((line) => line.startsWith('package.json:') && line.includes('"frobnicate"'))).toBe(true);
+  });
+
+  it('follows a linked dependency, as pnpm link: and workspace packages install it', () => {
+    const linked = tempTree({
+      'package.json': { name: '@acme/linked', standards: { extension: './standards.extension.mjs' } },
+      'standards.extension.mjs': 'const extension = { id: "linked", eslint: { options: ({ rootDir }) => ({ seenRoot: [rootDir] }) } };\nexport { extension };\n',
+    });
+    const root = tempTree({ 'package.json': { name: '@acme/repo', devDependencies: { '@acme/linked': 'link:../linked' } } });
+    mkdirSync(join(root, 'node_modules/@acme'), { recursive: true });
+    symlinkSync(linked, join(root, 'node_modules/@acme/linked'), 'junction');
+    const { extensions, context } = loadStandards({ rootDir: root });
+    const found = extensions.find((extension) => extension.id === 'linked');
+    expect(found.eslint.options(context)).toEqual({ seenRoot: [root] });
   });
 
   it('skips discovery when the config turns it off', async () => {

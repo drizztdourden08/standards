@@ -63,12 +63,12 @@ const tokenRules = (opts) => {
 };
 
 const resolveOptions = (input) => {
-  const { rootDir, extensions, options: config } = loadStandards({ rootDir: input.rootDir, presets: input.presets, extensions: input.extensions, discover: input.discover });
+  const { rootDir, context, extensions, options: config } = loadStandards({ rootDir: input.rootDir, packageDir: input.packageDir, presets: input.presets, extensions: input.extensions, discover: input.discover });
   const facets = facetsOf(extensions, 'stylelint');
   const tokens = config.tokens ? { tokens: config.tokens } : {};
   return {
     extendsConfig: standardConfigFor(input.rootDir ?? rootDir),
-    opts: mergeOptions(facetOptions(extensions, 'stylelint'), tokens, config.stylelint, input),
+    opts: mergeOptions(facetOptions(extensions, 'stylelint', context), tokens, config.stylelint, input),
     plugins: facets.flatMap((facet) => facet.plugins ?? []),
     rules: Object.assign({}, ...facets.map((facet) => facet.rules ?? {})),
   };
