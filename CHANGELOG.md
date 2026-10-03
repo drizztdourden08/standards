@@ -1,5 +1,11 @@
 # @drizztdourden08/standards
 
+## 1.0.3
+
+### Patch Changes
+
+- eb6c171: ESLint and stylelint skip `.claude/worktrees/**`, where Claude Code keeps agent worktrees, as they already skip `.worktrees/**`.
+
 ## 1.0.2
 
 ### Patch Changes
