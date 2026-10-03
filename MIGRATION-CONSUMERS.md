@@ -138,11 +138,19 @@ concurrency: release
 jobs:
   release:
     uses: drizztdourden08/standards/.github/workflows/release.yml@v1
+    with:
+      version: pnpm release:version
     permissions:
       contents: write
       packages: write
       pull-requests: write
 ```
+
+`version` and `publish` default to `pnpm changeset version` and `pnpm changeset publish`. Tessera passes `pnpm release:version`, which runs `changeset version` and then stamps the `next` release of RENAMES.json with the new version.
+
+### Nested eslint configs in test fixtures
+
+ESLint 10 looks up the nearest `eslint.config.mjs` for every file, so a fixture app under `tests/` that carries its own `eslint.config.mjs` is linted with that config, not the repo's. Ignore the fixture folder in the root config (`ignores: ['tests/fixtures/**']`), or keep its config out of the fixture.
 
 ## Archipelia
 
