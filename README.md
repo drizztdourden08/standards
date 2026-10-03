@@ -43,6 +43,7 @@ standards structure [--check]  package names, barrels, folder names, depth, comp
 standards prose                the writing gate over every tracked text file the other linters skip
 standards sync --check         .npmrc, the changeset config, .jscpd.json and knip.json against the templates,
                                and a failure when two copies of @drizztdourden08/standards resolve in one install
+                               (copies the install reaches; folders pnpm left in .pnpm after an upgrade do not count)
 ```
 
 Each command loads its code on first use, so `standards prose` never loads ESLint.

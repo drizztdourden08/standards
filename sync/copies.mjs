@@ -1,29 +1,40 @@
 /* @layer tooling-scripts @kind logic */
 import { existsSync, readdirSync, realpathSync } from 'node:fs';
-import { join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 import { workspaceDirs } from '../structure/workspace.mjs';
 
 const SCOPE = '@drizztdourden08';
 const NAME = 'standards';
 
-const copyUnder = (dir) => {
-  const path = join(dir, 'node_modules', SCOPE, NAME);
-  return existsSync(path) ? realpathSync(path) : null;
+const scopeEntries = (modulesDir) => {
+  const scopeDir = join(modulesDir, SCOPE);
+  return existsSync(scopeDir) ? readdirSync(scopeDir).map((name) => ({ name, path: join(scopeDir, name) })) : [];
 };
 
-const storeDirs = (rootDir) => {
-  const store = join(rootDir, 'node_modules', '.pnpm');
-  if (!existsSync(store)) return [];
-  return readdirSync(store).filter((name) => name !== 'node_modules' && !name.startsWith('.')).map((name) => join(store, name));
-};
+const modulesOf = (packageDir) =>
+  basename(dirname(packageDir)) === SCOPE && basename(dirname(dirname(packageDir))) === 'node_modules'
+    ? dirname(dirname(packageDir))
+    : join(packageDir, 'node_modules');
 
 /**
  * @param {string} rootDir
- * @returns {string[]} the real folders of each copy
+ * @returns {string[]} the real folder of each reachable copy
  */
 const standardsCopies = (rootDir) => {
-  const dirs = [rootDir, ...workspaceDirs(rootDir).dirs, ...storeDirs(rootDir)];
-  return [...new Set(dirs.map(copyUnder).filter(Boolean))];
+  const copies = new Set();
+  const seen = new Set();
+  const queue = [rootDir, ...workspaceDirs(rootDir).dirs].map((dir) => join(dir, 'node_modules'));
+  while (queue.length > 0) {
+    const modulesDir = queue.shift();
+    if (seen.has(modulesDir)) continue;
+    seen.add(modulesDir);
+    for (const { name, path } of scopeEntries(modulesDir)) {
+      const real = realpathSync(path);
+      if (name === NAME) copies.add(real);
+      else queue.push(modulesOf(real));
+    }
+  }
+  return [...copies];
 };
 
 /**

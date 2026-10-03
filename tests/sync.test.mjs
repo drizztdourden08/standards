@@ -1,6 +1,6 @@
 /* @layer tooling-scripts @kind test */
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { mkdirSync, readFileSync, symlinkSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { runSync, sharedFileFindings, standardsCopies } from '../sync/index.mjs';
 import { tempTree, removeTempTrees } from './temp-tree.mjs';
@@ -8,6 +8,13 @@ import { tempTree, removeTempTrees } from './temp-tree.mjs';
 const NPMRC = readFileSync(join(import.meta.dirname, '..', 'templates', 'npmrc'), 'utf8');
 const JSCPD = JSON.parse(readFileSync(join(import.meta.dirname, '..', 'jscpd', 'base.json'), 'utf8'));
 const STANDARDS_PKG = { name: '@drizztdourden08/standards', version: '1.0.0' };
+const STORE_A = 'node_modules/.pnpm/@drizztdourden08+standards@1.0.0/node_modules/@drizztdourden08/standards';
+const STORE_B = 'node_modules/.pnpm/@drizztdourden08+standards@1.0.1/node_modules/@drizztdourden08/standards';
+
+const link = (root, from, to) => {
+  mkdirSync(dirname(join(root, from)), { recursive: true });
+  symlinkSync(join(root, to), join(root, from), 'junction');
+};
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -52,13 +59,21 @@ describe('copies of standards', () => {
     const root = tempTree({
       '.npmrc': NPMRC,
       'pnpm-workspace.yaml': "packages:\n  - 'packages/*'\n",
-      'node_modules/.pnpm/@drizztdourden08+standards@1.0.0/node_modules/@drizztdourden08/standards/package.json': STANDARDS_PKG,
-      'node_modules/.pnpm/@drizztdourden08+standards@1.0.0_eslint@10/node_modules/@drizztdourden08/standards/package.json': STANDARDS_PKG,
+      [`${STORE_A}/package.json`]: STANDARDS_PKG,
+      [`${STORE_B}/package.json`]: STANDARDS_PKG,
       'packages/a/package.json': { name: 'a' },
     });
+    link(root, 'node_modules/@drizztdourden08/standards', STORE_A);
+    link(root, 'packages/a/node_modules/@drizztdourden08/standards', STORE_B);
     const errors = [];
     vi.spyOn(console, 'error').mockImplementation((line) => errors.push(line));
     expect(runSync({ rootDir: root, check: true })).toBe(1);
     expect(errors[0]).toMatch(/^standards sync: 2 copies of @drizztdourden08\/standards resolve in this install/);
+  });
+
+  it('does not count a folder pnpm left in .pnpm after an upgrade', () => {
+    const root = tempTree({ [`${STORE_A}/package.json`]: STANDARDS_PKG, [`${STORE_B}/package.json`]: STANDARDS_PKG });
+    link(root, 'node_modules/@drizztdourden08/standards', STORE_B);
+    expect(standardsCopies(root)).toHaveLength(1);
   });
 });
