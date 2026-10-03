@@ -3,7 +3,7 @@ import { NO_INLINE_EXPORT, NO_DEFAULT_EXPORT } from './quality-rules.mjs';
 
 const BASE_IGNORES = [
   'node_modules/**', '**/node_modules/**', 'dist/**', '**/dist/**', 'out/**', 'release/**', 'coverage/**',
-  '**/*.d.ts', '**/*.d.mts', '**/*.config.{js,ts,cjs,mjs}', '**/.markdownlint-cli2.mjs', '**/.brock/**', '.worktrees/**',
+  '**/*.d.ts', '**/*.d.mts', '**/*.config.{js,ts,cjs,mjs}', '**/.markdownlint-cli2.mjs', '**/.brock/**', '.worktrees/**', '.claude/worktrees/**',
 ];
 
 const DEFAULT_CONSOLE_GLOBS = ['**/bin/**', '**/scripts/**', '**/tooling/**', '**/*.test.{ts,tsx,js,mjs}'];

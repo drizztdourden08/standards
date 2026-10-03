@@ -113,7 +113,7 @@ const standardsStylelint = (input = {}) => {
       ...(opts.rules ?? {}),
     },
     overrides,
-    ignoreFiles: ['**/node_modules/**', '**/dist/**', '**/release/**', '.worktrees/**', ...(opts.ignoreFiles ?? [])],
+    ignoreFiles: ['**/node_modules/**', '**/dist/**', '**/release/**', '.worktrees/**', '.claude/worktrees/**', ...(opts.ignoreFiles ?? [])],
   };
 };
 
