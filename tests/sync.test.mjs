@@ -43,6 +43,18 @@ describe('shared files', () => {
     expect(readFileSync(join(root, '.gitignore'), 'utf8')).toBe(GITIGNORE);
   });
 
+  it('names a changeset that asks for a major bump, and passes minor and patch', () => {
+    const root = tempTree({
+      '.npmrc': NPMRC,
+      '.gitignore': GITIGNORE,
+      '.changeset/big.md': "---\n'@drizztdourden08/standards': major\n---\n\nA break.\n",
+      '.changeset/small.md': "---\n'@drizztdourden08/standards': minor\n'@drizztdourden08/brock': patch\n---\n\nA change, not a major one.\n",
+    });
+    expect(sharedFileFindings(root)).toEqual([
+      '.changeset/big.md: asks for a major bump; the family stays on 0.x, so use minor for a breaking change and patch for a fix',
+    ]);
+  });
+
   it('passes files that match the templates', () => {
     const root = tempTree({ '.npmrc': NPMRC, '.gitignore': GITIGNORE, '.jscpd.json': JSCPD, 'knip.json': { $schema: 'https://unpkg.com/knip@5/schema.json', entry: ['x.ts'] } });
     expect(sharedFileFindings(root)).toEqual([]);

@@ -12,7 +12,7 @@ Tessera is a design system: it takes the `design-system` preset and lists its ow
 ```diff
 -    "@drizztdourden08/brock-build": "^0.1.0",
 -    "@drizztdourden08/brock-lint-config": "^0.1.0",
-+    "@drizztdourden08/standards": "^1.0.0",
++    "@drizztdourden08/standards": "^0.6.0",
 -    "eslint-plugin-react-hooks": "^7.1.1",
 -    "typescript-eslint": "^8.60.1",
 ```
@@ -120,7 +120,7 @@ on:
   pull_request:
 jobs:
   gate:
-    uses: drizztdourden08/standards/.github/workflows/ci.yml@v1
+    uses: drizztdourden08/standards/.github/workflows/ci.yml@v0
     permissions:
       contents: read
       packages: read
@@ -137,7 +137,7 @@ on:
 concurrency: release
 jobs:
   release:
-    uses: drizztdourden08/standards/.github/workflows/release.yml@v1
+    uses: drizztdourden08/standards/.github/workflows/release.yml@v0
     with:
       version: pnpm release:version
     permissions:
@@ -167,7 +167,7 @@ Once Brock's packages and standards are published, every `link:X:/brock/...` spe
 +    "@drizztdourden08/brock-lint-config": "^0.2.0",
 +    "@drizztdourden08/brock-build": "^0.2.0",
 +    "@drizztdourden08/brock-thread": "^0.2.0",
-+    "@drizztdourden08/standards": "^1.0.0",
++    "@drizztdourden08/standards": "^0.6.0",
 ```
 
 The same goes for `brock-core`, `brock-electron`, `brock-react` and `brock-secrets` in `apps/desktop` and the packages. The Brock version is the one the changesets on `agent/standards` produce (a minor bump of the fixed group). `@drizztdourden08/standards` is a direct root devDependency so `standards sync --check` runs from the root scripts; pnpm then resolves one copy for the Brock packages and the root. The `ignoreDependencies` entries for `brock-lint-config` and `brock-thread` in `knip.json` exist because of the `link:` specs and go with them.
@@ -180,7 +180,7 @@ While Archipelia still links `X:/brock`, the linked `packages/lint-config` resol
 
 ### CI
 
-Archipelia has no workflow yet. When it gets one, it calls `ci.yml@v1` from the standards repo the same way as Tessera, with `scripts: lint lint:md structure test`.
+Archipelia has no workflow yet. When it gets one, it calls `ci.yml@v0` from the standards repo the same way as Tessera, with `scripts: lint lint:md structure test`.
 
 ## GitHub steps for the owner
 
@@ -189,5 +189,5 @@ Archipelia has no workflow yet. When it gets one, it calls `ci.yml@v1` from the 
 3. Package access: on the package page (`github.com/users/drizztdourden08/packages/npm/package/standards`), under Package settings, Manage Actions access, add `brock`, `tessera` and `archipelia` with the Read role, so their workflows install it with `GITHUB_TOKEN`. Keep the `standards` repo itself as Admin (it publishes). Add any future consumer repo the same way.
 4. Reusable workflows: in the standards repo, Settings, Actions, General, Access, choose "Accessible from repositories owned by the user drizztdourden08". A private repo's workflows cannot be called from another repo without it.
 5. Brock, after the publish: remove the `overrides` entry `'@drizztdourden08/standards': 'link:X:/standards'` from `pnpm-workspace.yaml`, run `pnpm install` so the lockfile records 1.0.0, and drop `@drizztdourden08/standards` from `ignoreDependencies` in `knip.json` (it is there only because of the link).
-6. Brock's CI switch: replace the `gate` job of `.github/workflows/ci.yml` with `uses: drizztdourden08/standards/.github/workflows/ci.yml@v1` and `scripts: lint lint:md structure test app:build`; keep the `upgrade` job, which only Brock runs. Replace `release.yml` with the reusable release workflow as shown for Tessera.
+6. Brock's CI switch: replace the `gate` job of `.github/workflows/ci.yml` with `uses: drizztdourden08/standards/.github/workflows/ci.yml@v0` and `scripts: lint lint:md structure test app:build`; keep the `upgrade` job, which only Brock runs. Replace `release.yml` with the reusable release workflow as shown for Tessera.
 7. Local machines already authenticate to GitHub Packages for the Brock packages (`read:packages`); the same token installs standards.

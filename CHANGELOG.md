@@ -1,5 +1,10 @@
 # @drizztdourden08/standards
 
+## 0.6.0
+
+- Standards moves to 0.x, like every package of the family: versions stay below 1.0 and bump minor for a breaking change and patch for a fix. 0.6.0 holds everything 1.0.5 did. Depend on `^0.6.0`, and call the shared workflows at `@v0`.
+- `standards sync --check` reports any changeset that asks for a major bump.
+
 ## 1.0.5
 
 ### Patch Changes

@@ -44,7 +44,8 @@ standards prose                the writing gate over every tracked text file the
 standards knip [args]          knip with the git-ignored paths under ignore, in place of its own .gitignore reading
 standards sync --check         .npmrc, .gitignore, the changeset config, .jscpd.json and knip.json against the templates,
                                and a failure when two copies of @drizztdourden08/standards resolve in one install
-                               (copies the install reaches; folders pnpm left in .pnpm after an upgrade do not count)
+                               (copies the install reaches; folders pnpm left in .pnpm after an upgrade do not count),
+                               and a failure for any changeset that asks for a major bump
 ```
 
 Each command loads its code on first use, so `standards prose` never loads ESLint.
@@ -172,7 +173,11 @@ The core allows `{Name}.usage.ts` in every component folder and requires it nowh
 ```yaml
 jobs:
   gate:
-    uses: drizztdourden08/standards/.github/workflows/ci.yml@v1
+    uses: drizztdourden08/standards/.github/workflows/ci.yml@v0
     with:
       scripts: lint lint:md structure test
 ```
+
+## Versions
+
+Every package of the family stays below 1.0. A breaking change bumps minor (0.9 to 0.10, with no ceiling) and a fix bumps patch; no changeset says `major`, and `standards sync --check` reports one that does. The shared workflows are tagged `v0`.
