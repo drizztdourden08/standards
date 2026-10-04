@@ -94,3 +94,43 @@ describe('extension options', () => {
     expect(messages.some((m) => m.startsWith('react-hooks/rules-of-hooks'))).toBe(true);
   });
 });
+
+describe('local/no-tool-brand-words', () => {
+  it('reports a banned word in a comment and in a string, a single-word string too', async () => {
+    const root = tempTree({ 'package.json': { name: 'x' } });
+    const code = `${HEADER}/** @type {string} written for Claude */\nconst a = 'ask the chatbot';\nconst b = 'openai';\n\nexport { a, b };\n`;
+    const messages = (await lint(root, 'a.mjs', code)).filter((m) => m.startsWith('local/no-tool-brand-words'));
+    expect(messages.map((m) => m.split(':')[1].trim())).toEqual(['"Claude"', '"chatbot"', '"openai"']);
+  });
+
+  it('reports a word inside a path string, with no folder exemption', async () => {
+    const root = tempTree({ 'package.json': { name: 'x' } });
+    const code = `${HEADER}const dirs = ['.claude/tools', '.ai/tools'];\n\nexport { dirs };\n`;
+    expect((await lint(root, 'a.mjs', code)).filter((m) => m.startsWith('local/no-tool-brand-words'))).toHaveLength(2);
+  });
+
+  it('leaves a regular expression literal alone', async () => {
+    const root = tempTree({ 'package.json': { name: 'x' } });
+    const code = `${HEADER}const trailer = /generated with gpt/i;\n\nexport { trailer };\n`;
+    expect((await lint(root, 'a.mjs', code)).filter((m) => m.startsWith('local/no-tool-brand-words'))).toEqual([]);
+  });
+});
+
+describe('local/no-slop-identifiers tool and vendor segments', () => {
+  const declare = (name) => `${HEADER}const ${name} = 1;\n\nexport { ${name} };\n`;
+  const identifierHits = async (root, name) => (await lint(root, 'a.mjs', declare(name))).filter((m) => m.startsWith('local/no-slop-identifiers'));
+
+  it('reports a banned segment in camelCase, PascalCase and snake_case', async () => {
+    const root = tempTree({ 'package.json': { name: 'x' } });
+    for (const name of ['aiDir', 'AI_PLUGIN_DIRS', 'useAi', 'isLLM', 'ChatGPTClient', 'claudeHome', 'openaiKey', 'anthropic_url', 'copilotPanel', 'chatbotList', 'gpt4']) {
+      expect(await identifierHits(root, name), name).toHaveLength(1);
+    }
+  });
+
+  it('leaves names that only contain the letters', async () => {
+    const root = tempTree({ 'package.json': { name: 'x' } });
+    for (const name of ['maintain', 'daily', 'pair', 'aid', 'detailView', 'MAIN_PAIRS']) {
+      expect(await identifierHits(root, name), name).toEqual([]);
+    }
+  });
+});

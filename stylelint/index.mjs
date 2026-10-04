@@ -3,6 +3,7 @@ import { createRequire } from 'node:module';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadStandards } from '../config/load.mjs';
+import { gitIgnoredGlobs } from '../config/git-ignored.mjs';
 import { facetOptions, facetsOf, mergeOptions } from '../config/merge.mjs';
 
 const QUERY_LENGTHS = ['width', 'min-width', 'max-width', 'height', 'min-height', 'max-height'];
@@ -67,6 +68,7 @@ const resolveOptions = (input) => {
   const facets = facetsOf(extensions, 'stylelint');
   const tokens = config.tokens ? { tokens: config.tokens } : {};
   return {
+    rootDir,
     extendsConfig: standardConfigFor(input.rootDir ?? rootDir),
     opts: mergeOptions(facetOptions(extensions, 'stylelint', context), tokens, config.stylelint, input),
     plugins: facets.flatMap((facet) => facet.plugins ?? []),
@@ -87,7 +89,7 @@ const resolveOptions = (input) => {
  * @returns {Record<string, unknown>}
  */
 const standardsStylelint = (input = {}) => {
-  const { opts, plugins, rules: extensionRules, extendsConfig } = resolveOptions(input);
+  const { rootDir, opts, plugins, rules: extensionRules, extendsConfig } = resolveOptions(input);
   const scoped = [
     [opts.uiGlobs, TOKEN_ONLY_RULES],
     [opts.tokenGlobs, opts.rawValueGlobs?.length ? TOKEN_DERIVED_RULES : TOKEN_RULES_OFF],
@@ -113,7 +115,7 @@ const standardsStylelint = (input = {}) => {
       ...(opts.rules ?? {}),
     },
     overrides,
-    ignoreFiles: ['**/node_modules/**', '**/dist/**', '**/release/**', '.worktrees/**', '.claude/worktrees/**', ...(opts.ignoreFiles ?? [])],
+    ignoreFiles: ['**/node_modules/**', '**/dist/**', '**/release/**', ...gitIgnoredGlobs(rootDir), ...(opts.ignoreFiles ?? [])],
   };
 };
 

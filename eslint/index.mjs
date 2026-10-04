@@ -2,6 +2,7 @@
 import tseslint from 'typescript-eslint';
 import { DEFAULT_ALLOW } from '../writing/slop-patterns.mjs';
 import { loadStandards } from '../config/load.mjs';
+import { gitIgnoredGlobs } from '../config/git-ignored.mjs';
 import { facetOptions, facetsOf, mergeOptions, proseWords } from '../config/merge.mjs';
 import { LOCAL_RULES, LOCAL_PLUGIN } from './local-rules.mjs';
 import { DEFAULT_COMMENT_ALLOW } from './rules/no-comments.mjs';
@@ -9,12 +10,17 @@ import { NO_INLINE_EXPORT, RAW_CONTROLS, RESTRICTED_SYNTAX, QUALITY_RULES, TS_QU
 import { BASE_IGNORES, BOUNDARY_RULES, PRIMITIVE_RULES, DEFAULT_CONSOLE_GLOBS, SHAPE_RULES, slopRules } from './rule-sets.mjs';
 import { tsBlock, jsBlock, settingsBlocks, exceptionBlocks, extensionRuleBlocks, extensionConfigs } from './blocks.mjs';
 
+const gitIgnoreBlocks = (rootDir) => {
+  const ignores = gitIgnoredGlobs(rootDir);
+  return ignores.length ? [{ name: 'standards/git-ignored', basePath: rootDir, ignores }] : [];
+};
+
 /**
  * @param {Record<string, any>} [input] loading keys plus factory options
  * @returns {import('eslint').Linter.Config[]}
  */
 const standardsEslint = (input = {}) => {
-  const { context, extensions, options: config } = loadStandards({ rootDir: input.rootDir, packageDir: input.packageDir, presets: input.presets, extensions: input.extensions, discover: input.discover });
+  const { rootDir, context, extensions, options: config } = loadStandards({ rootDir: input.rootDir, packageDir: input.packageDir, presets: input.presets, extensions: input.extensions, discover: input.discover });
   const facets = facetsOf(extensions, 'eslint');
   const opts = mergeOptions(facetOptions(extensions, 'eslint', context), config.eslint, input);
   const words = proseWords(extensions, config, opts);
@@ -30,6 +36,7 @@ const standardsEslint = (input = {}) => {
   };
   return tseslint.config(
     { ignores: [...BASE_IGNORES, ...(opts.ignores ?? [])] },
+    ...gitIgnoreBlocks(rootDir),
     ...settingsBlocks(opts),
     tsBlock(opts, shared),
     jsBlock(shared),

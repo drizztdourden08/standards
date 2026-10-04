@@ -1,6 +1,7 @@
 /* @layer tooling-scripts @kind config */
 import { DEFAULT_ALLOW } from '../writing/slop-patterns.mjs';
 import { loadStandards } from '../config/load.mjs';
+import { gitIgnoredGlobs } from '../config/git-ignored.mjs';
 import { facetsOf, mergeOptions, proseWords } from '../config/merge.mjs';
 
 const STYLE_OFF = {
@@ -15,11 +16,11 @@ const STYLE_OFF = {
   MD036: false,
 };
 
-const BASE_IGNORES = ['**/node_modules/**', '**/dist/**', '**/release/**', '**/out/**', '.worktrees/**'];
+const BASE_IGNORES = ['**/node_modules/**', '**/dist/**', '**/release/**', '**/out/**'];
 
 const RULES_MODULE = '@drizztdourden08/standards/markdownlint/rules';
 
-const WRITING_RULES = ['no-slop-prose', 'no-em-dash', 'no-smart-punctuation'];
+const WRITING_RULES = ['no-slop-prose', 'no-em-dash', 'no-smart-punctuation', 'no-tool-brand-words'];
 
 const writingConfig = ({ allow, banned }) => {
   if (!allow.length && !banned.length) return {};
@@ -32,7 +33,7 @@ const writingConfig = ({ allow, banned }) => {
  * @returns {{ config: Record<string, unknown>, customRules: unknown[], globs: string[], ignores: string[] }}
  */
 const standardsMarkdownlint = (input = {}) => {
-  const { extensions, options: config } = loadStandards({ rootDir: input.rootDir, presets: input.presets, extensions: input.extensions, discover: input.discover });
+  const { rootDir, extensions, options: config } = loadStandards({ rootDir: input.rootDir, presets: input.presets, extensions: input.extensions, discover: input.discover });
   const facets = facetsOf(extensions, 'markdownlint');
   const opts = mergeOptions(config.markdownlint, input);
   return {
@@ -44,7 +45,7 @@ const standardsMarkdownlint = (input = {}) => {
     },
     customRules: [opts.rulesModule ?? RULES_MODULE, ...facets.flatMap((facet) => facet.customRules ?? [])],
     globs: opts.globs ?? ['**/*.md'],
-    ignores: [...BASE_IGNORES, ...(opts.ignores ?? [])],
+    ignores: [...BASE_IGNORES, ...gitIgnoredGlobs(rootDir), ...(opts.ignores ?? [])],
   };
 };
 

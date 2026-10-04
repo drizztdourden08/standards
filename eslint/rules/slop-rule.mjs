@@ -49,6 +49,7 @@ const slopRule = (group, description) => ({
 
 const noEmDash = slopRule('dash', 'No em dash or en dash: rewrite the sentence');
 const noSmartPunctuation = slopRule('punct', 'No unicode ellipsis or curly quotes');
-const noSlopProse = slopRule('prose', 'No AI-writing phrases, connectors, slop words or filler adverbs');
+const noSlopProse = slopRule('prose', 'No stock phrases, connectors, slop words or filler adverbs');
+const noToolBrandWords = slopRule('brand', 'No banned tool and vendor names in comments and strings');
 
-export { noEmDash, noSmartPunctuation, noSlopProse };
+export { noEmDash, noSmartPunctuation, noSlopProse, noToolBrandWords };

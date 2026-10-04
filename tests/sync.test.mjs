@@ -36,7 +36,7 @@ describe('shared files', () => {
     const findings = sharedFileFindings(root);
     expect(findings).toContain('.npmrc: missing the line "@drizztdourden08:registry=https://npm.pkg.github.com"');
     expect(findings).toContain('.jscpd.json: "minTokens" is 30, the base has 50');
-    expect(findings).toContain('.jscpd.json: "ignore" lacks .worktrees/**');
+    expect(findings).toContain('.jscpd.json: "ignore" lacks **/fonts/**');
     expect(findings).toContain('.changeset/config.json: "access" is "public", the base has "restricted"');
     expect(findings.some((finding) => finding.includes('"fixed"'))).toBe(false);
   });

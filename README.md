@@ -48,6 +48,8 @@ standards sync --check         .npmrc, the changeset config, .jscpd.json and kni
 
 Each command loads its code on first use, so `standards prose` never loads ESLint.
 
+Every check skips what git ignores: the ESLint, stylelint and markdownlint factories and `standards lint`'s jscpd step ask `git ls-files --others --ignored --exclude-standard --directory` once per run, so `.gitignore` files, `.git/info/exclude` and the global excludes file all count, and `standards prose` reads only the files git tracks or leaves unignored. Outside a git work tree the root `.gitignore` is read instead. Code never points into an ignored folder.
+
 ## Presets
 
 | Preset | Adds to the core |
@@ -119,7 +121,7 @@ export default defineExtension({
 
 A monorepo linted from its root gets `rootDir` alone and returns globs relative to it; a package that runs its own config gets its `packageDir` too. Plain-object options keep working, and both forms mix in one repo. `facetOptions(extensions, name, ctx)` exposes the same merge; without `ctx` it uses the nearest root above the working folder.
 
-The existing rule ids stay: `local/*` in ESLint, `BROCK001` to `BROCK006` in markdownlint, `brock/no-token-*` in stylelint, so disable comments keep working.
+The existing rule ids stay: `local/*` in ESLint, `BROCK001` to `BROCK006` in markdownlint (`BROCK007`, `no-tool-brand-words`, is new beside `local/no-tool-brand-words`), `brock/no-token-*` in stylelint, so disable comments keep working.
 
 ### Where extensions come from
 

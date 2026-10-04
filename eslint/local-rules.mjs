@@ -4,7 +4,7 @@ import { noRawColor } from './rules/no-raw-color.mjs';
 import { noInlineStyle } from './rules/no-inline-style.mjs';
 import { noAsElementWithPrimitive } from './rules/no-as-element-with-primitive.mjs';
 import { noStaticInlineStyle } from './rules/no-static-inline-style.mjs';
-import { noEmDash, noSmartPunctuation, noSlopProse } from './rules/slop-rule.mjs';
+import { noEmDash, noSmartPunctuation, noSlopProse, noToolBrandWords } from './rules/slop-rule.mjs';
 import { noComments } from './rules/no-comments.mjs';
 import { noSlopIdentifiers } from './rules/no-slop-identifiers.mjs';
 import { exportsLast } from './rules/exports-last.mjs';
@@ -26,6 +26,7 @@ const LOCAL_RULES = {
   'no-em-dash': noEmDash,
   'no-smart-punctuation': noSmartPunctuation,
   'no-slop-prose': noSlopProse,
+  'no-tool-brand-words': noToolBrandWords,
   'no-comments': noComments,
   'no-slop-identifiers': noSlopIdentifiers,
   'exports-last': exportsLast,

@@ -60,22 +60,23 @@ const lineRule = ({ id, name, description, re, detail }) => ({
 const rules = [
   makeRule('BROCK001', 'no-em-dash', 'dash', 'Em dash or en dash in prose; rewrite the sentence, do not swap the character'),
   makeRule('BROCK002', 'no-smart-punctuation', 'punct', 'Unicode ellipsis, curly quote, emoji or glyph in prose; use plain ASCII'),
-  makeRule('BROCK003', 'no-slop-prose', 'prose', 'AI-writing pattern in prose; use plain words and short sentences'),
+  makeRule('BROCK003', 'no-slop-prose', 'prose', 'Stock phrasing or filler in prose; use plain words and short sentences'),
   lineRule({
     id: 'BROCK004',
     name: 'no-slop-headings',
     description: 'Template heading that names a section shape instead of its subject',
     re: SLOP_HEADINGS,
-    detail: 'Name what the section is about. "Overview", "Summary", "Key features" and "Conclusion" are the shape of a generated page, not a subject.',
+    detail: 'Name what the section is about. "Overview", "Summary", "Key features" and "Conclusion" are the shape of a template page, not a subject.',
   }),
   lineRule({
     id: 'BROCK005',
     name: 'no-bold-label-bullets',
     description: 'Bullet that opens with a bold label and a colon',
     re: BOLD_LABEL_BULLET,
-    detail: 'Write the bullet as a sentence, or make the labels a table. A run of "- **Label:** text" is the generated-list shape.',
+    detail: 'Write the bullet as a sentence, or make the labels a table. A run of "- **Label:** text" is the template-list shape.',
   }),
   lineRule({ id: 'BROCK006', name: 'no-emoji-headings', description: 'Heading that opens with an emoji', re: EMOJI_HEADING, detail: 'Delete the emoji. A heading is words.' }),
+  makeRule('BROCK007', 'no-tool-brand-words', 'brand', 'Banned tool or vendor name in prose'),
 ];
 
 export default rules;

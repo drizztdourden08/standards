@@ -1,5 +1,5 @@
 /* @layer tooling-scripts @kind logic */
-import { SLOP_WORDS, FILLER_ADVERBS, STOCK_PHRASES, CONNECTORS } from './slop-word-lists.mjs';
+import { SLOP_WORDS, FILLER_ADVERBS, STOCK_PHRASES, CONNECTORS, TOOL_BRAND_WORDS } from './slop-word-lists.mjs';
 
 const w = (words) => new RegExp(`\\b(?:${words})\\b`, 'gi');
 
@@ -94,6 +94,12 @@ const PATTERNS = [
     advice: 'Write "make sure", "check" or "guarantee". Identifiers such as ensureWasm or ensure-wasm are left alone.',
   },
   {
+    id: 'tool-brand-word',
+    group: 'brand',
+    re: new RegExp(`(?<![\\w$])(?:${TOOL_BRAND_WORDS})(?![\\w$])`, 'gi'),
+    advice: 'These projects do not name this kind of tool or its vendor. Say what the code does, or delete the word.',
+  },
+  {
     id: 'exclamation',
     group: 'prose',
     re: /[a-z]![ \n"')]/g,
@@ -109,8 +115,8 @@ const DEFAULT_ALLOW = [
   'underscore', 'underscores',
 ];
 
-const RULE_BY_GROUP = { dash: 'no-em-dash', punct: 'no-smart-punctuation', prose: 'no-slop-prose' };
-const GROUPS = ['dash', 'punct', 'prose'];
+const RULE_BY_GROUP = { dash: 'no-em-dash', punct: 'no-smart-punctuation', prose: 'no-slop-prose', brand: 'no-tool-brand-words' };
+const GROUPS = ['dash', 'punct', 'prose', 'brand'];
 
 const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const compileAllow = (allow) =>

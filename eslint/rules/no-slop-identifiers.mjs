@@ -3,6 +3,8 @@ const PREFIX = /^(?:Enhanced|Improved|Better|Advanced|Smart|Simple|Basic|Modern|
 const SUFFIX = /(?:Helper|Helpers|Util|Utils|Utility|Utilities|Wrapper|Impl|Temp|Tmp|Backup|Refactored|Updated|Enhanced|Improved|V\d|Final|Legacy)$/;
 const PLACEHOLDER_NAMES = /^(?:foo|baz|qux|quux|dummy|temp|tmp|thing|stuff|blah|whatever|something|myVar|myValue|someValue|someData|data2|result2|test123|asdf|xyz)$/i;
 const NUMBERED_COPY = /^(?:.+)(?:Data|Info|Object|Obj|Value|Val|Result|Thing|Stuff|Item|Var|Manager|Handler|Processor|Service)2$/;
+const BRAND_SEGMENT = /^(?:ai|llms?|gpt|claude|openai|anthropic|copilot|chatbots?)$/i;
+const SEGMENT_BREAK = /[_$]+|(?<=[a-z0-9])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|(?<=[A-Za-z])(?=[0-9])/;
 
 const DECLARATIONS = [
   'VariableDeclarator > Identifier.id',
@@ -17,7 +19,11 @@ const DECLARATIONS = [
   'TSPropertySignature > Identifier.key',
 ].join(', ');
 
+const brandSegmentOf = (name) => name.split(SEGMENT_BREAK).find((segment) => BRAND_SEGMENT.test(segment));
+
 const problemOf = (name) => {
+  const brand = brandSegmentOf(name);
+  if (brand) return `a tool or vendor name ("${brand}"); name what it holds or does`;
   if (PLACEHOLDER_NAMES.test(name)) return 'a placeholder name; name what it holds';
   if (PREFIX.test(name)) return 'a qualifier prefix; the qualifier says this is the second version of something. Replace the original or name the difference';
   if (SUFFIX.test(name)) return 'a suffix that names a shape instead of a subject. Name what it is for';
@@ -26,7 +32,7 @@ const problemOf = (name) => {
 };
 
 const noSlopIdentifiers = {
-  meta: { type: 'problem', docs: { description: 'No placeholder, qualifier-prefixed, shape-suffixed or numbered-copy names at declaration sites' }, schema: [] },
+  meta: { type: 'problem', docs: { description: 'No placeholder, qualifier-prefixed, shape-suffixed, numbered-copy or tool-vendor names at declaration sites' }, schema: [] },
   create(context) {
     return {
       [DECLARATIONS](node) {

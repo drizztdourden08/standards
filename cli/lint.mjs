@@ -4,6 +4,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join, resolve } from 'node:path';
 import { loadStandards, OWN_ROOT } from '../config/load.mjs';
+import { gitIgnoredGlobs } from '../config/git-ignored.mjs';
 import { runProse } from '../prose/index.mjs';
 
 const binOf = (name, fromDirs) => {
@@ -35,6 +36,17 @@ const stylelintArgs = (rootDir, globs) => [
   ...(existsSync(join(rootDir, '.gitignore')) ? ['--ignore-path', '.gitignore'] : []),
 ];
 
+const jscpdIgnores = (rootDir) => {
+  const file = join(rootDir, '.jscpd.json');
+  const own = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')).ignore ?? [] : [];
+  return [...own, ...gitIgnoredGlobs(rootDir)];
+};
+
+const jscpdArgs = (rootDir) => {
+  const ignores = jscpdIgnores(rootDir);
+  return ignores.length ? ['.', '--ignore', ignores.join(',')] : ['.'];
+};
+
 const steps = (rootDir, lint) => {
   const theirs = [rootDir, OWN_ROOT];
   return [
@@ -43,7 +55,7 @@ const steps = (rootDir, lint) => {
     { id: 'stylelint', name: 'stylelint', from: theirs, args: stylelintArgs(rootDir, lint.stylelint ?? ['**/*.css']) },
     { id: 'prose', run: () => runProse({ rootDir }) },
     { id: 'knip', name: 'knip', from: theirs, args: [] },
-    { id: 'jscpd', name: 'jscpd', from: theirs, args: ['.'] },
+    { id: 'jscpd', name: 'jscpd', from: theirs, args: jscpdArgs(rootDir) },
   ].filter((step) => step.when !== false && !(lint.skip ?? []).includes(step.id));
 };
 

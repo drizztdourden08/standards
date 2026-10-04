@@ -4,7 +4,7 @@
 
 ### Patch Changes
 
-- eb6c171: ESLint and stylelint skip `.claude/worktrees/**`, where Claude Code keeps agent worktrees, as they already skip `.worktrees/**`.
+- eb6c171: ESLint and stylelint skip a second agent worktree folder, as they already skip `.worktrees/**`.
 
 ## 1.0.2
 

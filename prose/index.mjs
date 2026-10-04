@@ -11,7 +11,7 @@ const TEXT_FILES = /\.(json|jsonc|json5|ya?ml|toml|ini|html|htm|svg|txt|env|prop
 const OWN_LINTER = /\.(tsx?|mjs|cjs|jsx?|css|md)$/i;
 const CONFIG_FILE = /(^|[\\/])(?:[^\\/]+\.config\.(?:js|ts|cjs|mjs)|\.markdownlint-cli2\.mjs)$/;
 const SKIP = /(^|[\\/])(?:pnpm-lock\.yaml|package-lock\.json|.*\.min\.[a-z]+|\.brock[\\/]|\.user-data[\\/]|CHANGELOG\.md)$/i;
-const SKIP_DIRS = new Set(['node_modules', 'dist', 'out', 'release', 'coverage', '.git', '.brock', '.user-data', '.claude', '.ai']);
+const SKIP_DIRS = new Set(['node_modules', 'dist', 'out', 'release', 'coverage', '.git', '.brock', '.user-data']);
 
 const gitFiles = (rootDir) => {
   try {

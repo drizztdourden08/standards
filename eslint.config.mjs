@@ -1,7 +1,7 @@
 /* @layer root-config @kind config */
 import { standardsEslint } from './eslint/index.mjs';
 
-const WRITING_OFF = { 'local/no-em-dash': 'off', 'local/no-smart-punctuation': 'off', 'local/no-slop-prose': 'off' };
+const WRITING_OFF = { 'local/no-em-dash': 'off', 'local/no-smart-punctuation': 'off', 'local/no-slop-prose': 'off', 'local/no-tool-brand-words': 'off' };
 
 export default standardsEslint({
   presets: ['library'],

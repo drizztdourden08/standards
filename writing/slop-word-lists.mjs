@@ -53,4 +53,9 @@ const CONNECTORS = [
   'In summary|To summarize|In short|In addition|As a result|For instance|Of course|Remember',
 ].join('|');
 
-export { SLOP_WORDS, FILLER_ADVERBS, STOCK_PHRASES, CONNECTORS };
+const TOOL_BRAND_WORDS = [
+  'a\\.i\\.|ai|llms?|gpt|chatgpt|claude|copilot|openai|anthropic|chatbots?|genai',
+  'artificial\\s+intelligence|language\\s+models?|machine\\s+learning',
+].join('|');
+
+export { SLOP_WORDS, FILLER_ADVERBS, STOCK_PHRASES, CONNECTORS, TOOL_BRAND_WORDS };
