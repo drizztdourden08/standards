@@ -1,8 +1,9 @@
 /* @layer tooling-scripts @kind logic */
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { OWN_ROOT } from '../config/load.mjs';
+import { pathToFileURL } from 'node:url';
+import { loadStandards, OWN_ROOT } from '../config/load.mjs';
 import { gitIgnoredGlobs } from '../config/git-ignored.mjs';
 import { binOf } from './bin-of.mjs';
 
@@ -24,13 +25,45 @@ const knipConfigFor = (rootDir) => {
   return { ...config, ignore: [...asList(config.ignore), ...knipIgnores(rootDir)] };
 };
 
+const CACHE_DIR = ['node_modules', '.cache', 'standards'];
+const CONFIG_MODULE = 'knip.config.mjs';
+const OLD_CONFIG = 'knip.json';
+const ownUrl = (path) => JSON.stringify(pathToFileURL(join(OWN_ROOT, path)).href);
+
+/**
+ * @param {string} rootDir
+ * @param {Record<string, unknown>} config what knipConfigFor returns
+ * @returns {string} the knip config module source
+ */
+const knipConfigModule = (rootDir, config) => [
+  '// Written by standards knip on every run: the repo knip.json, the git-ignored paths and the knip facets of its extensions.',
+  `import { loadStandards } from ${ownUrl('config/load.mjs')};`,
+  `import { withKnipFacets } from ${ownUrl('config/knip-facet.mjs')};`,
+  '',
+  `const config = ${JSON.stringify(config, null, 2)};`,
+  '',
+  `export default withKnipFacets(config, loadStandards({ rootDir: ${JSON.stringify(rootDir)} }));`,
+  '',
+].join('\n');
+
+/**
+ * @param {string} rootDir
+ * @param {Record<string, unknown>} config what knipConfigFor returns
+ * @returns {string} the config module path, under node_modules/.cache/standards
+ */
 const writeConfig = (rootDir, config) => {
-  const dir = join(rootDir, 'node_modules', '.cache', 'standards');
+  const dir = join(rootDir, ...CACHE_DIR);
   mkdirSync(dir, { recursive: true });
-  const file = join(dir, 'knip.json');
-  writeFileSync(file, `${JSON.stringify(config, null, 2)}\n`);
+  rmSync(join(dir, OLD_CONFIG), { force: true });
+  const file = join(dir, CONFIG_MODULE);
+  writeFileSync(file, knipConfigModule(rootDir, config));
   writeFileSync(join(dir, 'git-ignored.json'), `${JSON.stringify({ source: configNameIn(rootDir), ignore: knipIgnores(rootDir) })}\n`);
   return file;
+};
+
+const warnUnusedFacets = (rootDir, label) => {
+  const ids = loadStandards({ rootDir }).extensions.filter((extension) => extension.knip).map((extension) => extension.id);
+  if (ids.length) console.warn(`${label}: no knip.json, so the knip facets of ${ids.join(', ')} do not apply`);
 };
 
 /**
@@ -44,8 +77,9 @@ const runKnip = ({ rootDir, args = [], label = 'standards knip' }) => {
     return 1;
   }
   const config = knipConfigFor(rootDir);
+  if (!config) warnUnusedFacets(rootDir, label);
   const configArgs = config ? ['--no-gitignore', '--config', writeConfig(rootDir, config), '--preprocessor', HINTS] : [];
   return spawnSync(process.execPath, [bin, ...configArgs, ...args], { cwd: rootDir, stdio: 'inherit' }).status ?? 1;
 };
 
-export { runKnip, knipConfigFor };
+export { runKnip, knipConfigFor, writeConfig };
