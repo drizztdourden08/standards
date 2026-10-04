@@ -1,5 +1,4 @@
 /* @layer tooling-scripts @kind test */
-import { execFileSync } from 'node:child_process';
 import { appendFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { ESLint } from 'eslint';
@@ -8,16 +7,9 @@ import { gitIgnoredGlobs } from '../config/git-ignored.mjs';
 import { standardsEslint } from '../eslint/index.mjs';
 import { standardsMarkdownlint } from '../markdownlint/index.mjs';
 import { standardsStylelint } from '../stylelint/index.mjs';
-import { tempTree, removeTempTrees } from './temp-tree.mjs';
+import { gitTree, tempTree, removeTempTrees } from './temp-tree.mjs';
 
 const HEADER = '/* @layer tooling-scripts @kind logic */\n';
-
-const gitTree = (files) => {
-  const root = tempTree({ 'global-excludes': '', ...files });
-  execFileSync('git', ['init', '-q'], { cwd: root });
-  execFileSync('git', ['config', 'core.excludesFile', join(root, 'global-excludes')], { cwd: root });
-  return root;
-};
 
 afterEach(removeTempTrees);
 

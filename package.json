@@ -70,7 +70,7 @@
     "MIGRATION-CONSUMERS.md"
   ],
   "scripts": {
-    "lint": "eslint . && node bin/standards.mjs prose && node bin/standards.mjs sync --check && knip && jscpd .",
+    "lint": "eslint . && node bin/standards.mjs prose && node bin/standards.mjs sync --check && node bin/standards.mjs knip && jscpd .",
     "changeset": "changeset",
     "lint:md": "markdownlint-cli2",
     "test": "vitest run",

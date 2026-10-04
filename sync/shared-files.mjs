@@ -2,6 +2,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { OWN_ROOT } from '../config/load.mjs';
+import { gitignoreFindings } from './gitignore-findings.mjs';
 
 const readOwn = (path) => readFileSync(join(OWN_ROOT, path), 'utf8');
 const readOwnJson = (path) => JSON.parse(readOwn(path));
@@ -56,6 +57,6 @@ const knipFindings = (rootDir) => {
  * @param {string} rootDir
  * @returns {string[]} one line per shared file that drifts from its template
  */
-const sharedFileFindings = (rootDir) => [...npmrcFindings(rootDir), ...changesetFindings(rootDir), ...jscpdFindings(rootDir), ...knipFindings(rootDir)];
+const sharedFileFindings = (rootDir) => [...npmrcFindings(rootDir), ...gitignoreFindings(rootDir), ...changesetFindings(rootDir), ...jscpdFindings(rootDir), ...knipFindings(rootDir)];
 
 export { sharedFileFindings };

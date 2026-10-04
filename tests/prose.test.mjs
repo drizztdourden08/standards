@@ -16,6 +16,13 @@ afterEach(() => {
 });
 
 describe('runProse', () => {
+  it('skips every dot-folder when it walks a folder git does not know', () => {
+    const root = tempTree({ '.tool/notes.txt': 'A robust tool.\n', 'app/.state/notes.txt': 'A robust tool.\n', 'notes.txt': 'A robust tool.\n' });
+    const lines = captured();
+    expect(runProse({ rootDir: root })).toBe(1);
+    expect(lines.filter((line) => line.includes('"robust"'))).toEqual([expect.stringMatching(/^notes\.txt:1:3 /)]);
+  });
+
   it('scans the text files the other linters skip and names the label', () => {
     const root = tempTree({ 'notes.txt': 'It is a robust tool.\n', 'a.ts': 'const robust = 1;\n' });
     const lines = captured();

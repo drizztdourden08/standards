@@ -10,8 +10,9 @@ import { readProseIgnore } from './prose-ignore.mjs';
 const TEXT_FILES = /\.(json|jsonc|json5|ya?ml|toml|ini|html|htm|svg|txt|env|properties|cjs|mjs|js|ts|tsx|css|md)$/i;
 const OWN_LINTER = /\.(tsx?|mjs|cjs|jsx?|css|md)$/i;
 const CONFIG_FILE = /(^|[\\/])(?:[^\\/]+\.config\.(?:js|ts|cjs|mjs)|\.markdownlint-cli2\.mjs)$/;
-const SKIP = /(^|[\\/])(?:pnpm-lock\.yaml|package-lock\.json|.*\.min\.[a-z]+|\.brock[\\/]|\.user-data[\\/]|CHANGELOG\.md)$/i;
-const SKIP_DIRS = new Set(['node_modules', 'dist', 'out', 'release', 'coverage', '.git', '.brock', '.user-data']);
+const SKIP = /(^|[\\/])(?:pnpm-lock\.yaml|package-lock\.json|.*\.min\.[a-z]+|CHANGELOG\.md)$/i;
+const SKIP_DIRS = new Set(['node_modules', 'dist', 'out', 'release', 'coverage']);
+const isSkippedDir = (name) => SKIP_DIRS.has(name) || name.startsWith('.');
 
 const gitFiles = (rootDir) => {
   try {
@@ -24,10 +25,10 @@ const gitFiles = (rootDir) => {
 
 const walkFiles = (rootDir, dir = rootDir, out = []) => {
   for (const name of readdirSync(dir)) {
-    if (SKIP_DIRS.has(name)) continue;
     const file = join(dir, name);
-    if (statSync(file).isDirectory()) walkFiles(rootDir, file, out);
-    else out.push(relative(rootDir, file).replace(/\\/g, '/'));
+    const isDir = statSync(file).isDirectory();
+    if (isDir && !isSkippedDir(name)) walkFiles(rootDir, file, out);
+    else if (!isDir) out.push(relative(rootDir, file).replace(/\\/g, '/'));
   }
   return out;
 };

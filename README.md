@@ -41,14 +41,17 @@ Each factory returns its config synchronously, so a config file default-exports 
 standards lint                 typecheck, eslint, stylelint, prose, knip and jscpd; every step runs, the failures are listed at the end
 standards structure [--check]  package names, barrels, folder names, depth, component and module folder shapes
 standards prose                the writing gate over every tracked text file the other linters skip
-standards sync --check         .npmrc, the changeset config, .jscpd.json and knip.json against the templates,
+standards knip [args]          knip with the git-ignored paths under ignore, in place of its own .gitignore reading
+standards sync --check         .npmrc, .gitignore, the changeset config, .jscpd.json and knip.json against the templates,
                                and a failure when two copies of @drizztdourden08/standards resolve in one install
                                (copies the install reaches; folders pnpm left in .pnpm after an upgrade do not count)
 ```
 
 Each command loads its code on first use, so `standards prose` never loads ESLint.
 
-Every check skips what git ignores: the ESLint, stylelint and markdownlint factories and `standards lint`'s jscpd step ask `git ls-files --others --ignored --exclude-standard --directory` once per run, so `.gitignore` files, `.git/info/exclude` and the global excludes file all count, and `standards prose` reads only the files git tracks or leaves unignored. Outside a git work tree the root `.gitignore` is read instead. Code never points into an ignored folder.
+Every check skips what git ignores. The ESLint, stylelint and markdownlint factories, `standards knip` and `standards lint`'s jscpd step ask `git ls-files --others --ignored --exclude-standard --directory` once per run, so `.gitignore` files, `.git/info/exclude` and the global excludes file all count, and `standards prose` reads only the files git tracks or leaves unignored. Outside a git work tree the root `.gitignore` is read instead. Code never points into an ignored folder.
+
+Every folder that needs ignoring is a dot-folder. `templates/gitignore` opens with a note on that rule, ignores every dot-folder with `.*/`, and lists the tracked ones (`.github/`, `.changeset/`, `.vscode/extensions.json`) as exceptions; `standards sync --check` reports a `.gitignore` that lacks `.*/` or names one dot-folder `.*/` already covers. `standards knip` runs knip with `--no-gitignore` and the git-ignored paths under `ignore`, because knip's own `.gitignore` reading matches `.*/` against the folders above a work tree and ignores every file in a work tree that lives inside a dot-folder.
 
 ## Presets
 

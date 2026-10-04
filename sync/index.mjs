@@ -16,6 +16,7 @@ const writeMissing = (rootDir, findings) => {
     appendFileSync(npmrc, `${lead}${missing.join('\n')}\n`);
   }
   if (!existsSync(join(rootDir, '.jscpd.json'))) copyFileSync(join(OWN_ROOT, 'jscpd', 'base.json'), join(rootDir, '.jscpd.json'));
+  if (!existsSync(join(rootDir, '.gitignore'))) copyFileSync(join(OWN_ROOT, 'templates', 'gitignore'), join(rootDir, '.gitignore'));
 };
 
 /**
@@ -28,7 +29,7 @@ const runSync = ({ rootDir, check = false, label = 'standards sync' }) => {
     writeMissing(rootDir, files);
     const left = sharedFileFindings(rootDir);
     for (const finding of left) console.log(`${label}: ${finding}`);
-    console.log(`${label}: wrote the missing .npmrc lines and .jscpd.json; ${left.length} difference(s) left to merge by hand.`);
+    console.log(`${label}: wrote the missing .npmrc lines, .jscpd.json and .gitignore; ${left.length} difference(s) left to merge by hand.`);
     return 0;
   }
   const findings = [...files, ...copyFindings(rootDir)];

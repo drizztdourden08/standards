@@ -1,4 +1,5 @@
 /* @layer tooling-scripts @kind test */
+import { execFileSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -19,8 +20,19 @@ const tempTree = (files) => {
   return root;
 };
 
+/**
+ * @param {Record<string, string | object>} files
+ * @returns {string} a temp git work tree with an empty global excludes file
+ */
+const gitTree = (files) => {
+  const root = tempTree({ 'global-excludes': '', ...files });
+  execFileSync('git', ['init', '-q'], { cwd: root });
+  execFileSync('git', ['config', 'core.excludesFile', join(root, 'global-excludes')], { cwd: root });
+  return root;
+};
+
 const removeTempTrees = () => {
   for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true });
 };
 
-export { tempTree, removeTempTrees };
+export { tempTree, gitTree, removeTempTrees };

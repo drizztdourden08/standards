@@ -1,25 +1,12 @@
 /* @layer tooling-scripts @kind logic */
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
-import { createRequire } from 'node:module';
-import { dirname, join, resolve } from 'node:path';
+import { join } from 'node:path';
 import { loadStandards, OWN_ROOT } from '../config/load.mjs';
 import { gitIgnoredGlobs } from '../config/git-ignored.mjs';
 import { runProse } from '../prose/index.mjs';
-
-const binOf = (name, fromDirs) => {
-  for (const dir of fromDirs) {
-    try {
-      const pkgFile = createRequire(join(dir, 'package.json')).resolve(`${name}/package.json`);
-      const { bin } = JSON.parse(readFileSync(pkgFile, 'utf8'));
-      const entry = typeof bin === 'string' ? bin : bin?.[name] ?? Object.values(bin ?? {})[0];
-      if (entry) return resolve(dirname(pkgFile), entry);
-    } catch {
-      continue;
-    }
-  }
-  return null;
-};
+import { binOf } from './bin-of.mjs';
+import { runKnip } from './knip.mjs';
 
 const runTool = (rootDir, { name, from, args }) => {
   const bin = binOf(name, from);
@@ -54,7 +41,7 @@ const steps = (rootDir, lint) => {
     { id: 'eslint', name: 'eslint', from: theirs, args: ['.'] },
     { id: 'stylelint', name: 'stylelint', from: theirs, args: stylelintArgs(rootDir, lint.stylelint ?? ['**/*.css']) },
     { id: 'prose', run: () => runProse({ rootDir }) },
-    { id: 'knip', name: 'knip', from: theirs, args: [] },
+    { id: 'knip', run: () => runKnip({ rootDir }) },
     { id: 'jscpd', name: 'jscpd', from: theirs, args: jscpdArgs(rootDir) },
   ].filter((step) => step.when !== false && !(lint.skip ?? []).includes(step.id));
 };

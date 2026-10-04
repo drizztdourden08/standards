@@ -7,6 +7,6 @@ export default standardsEslint({
   presets: ['library'],
   ignores: ['tests/fixtures/**'],
   consoleGlobs: ['bin/**', 'cli/**', 'structure/index.mjs', 'prose/index.mjs', 'sync/index.mjs', 'tests/**'],
-  defaultExportGlobs: ['presets/*.mjs', 'extensions/*/index.mjs', 'markdownlint/rules.mjs', 'stylelint/rules/no-token-*.mjs'],
+  defaultExportGlobs: ['cli/knip-hints.mjs', 'presets/*.mjs', 'extensions/*/index.mjs', 'markdownlint/rules.mjs', 'stylelint/rules/no-token-*.mjs'],
   extra: [{ files: ['writing/**', 'markdownlint/rules.mjs', 'tests/**'], rules: WRITING_OFF }],
 });
