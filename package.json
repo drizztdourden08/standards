@@ -1,6 +1,6 @@
 {
   "name": "@drizztdourden08/standards",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "The shared rules of every drizztdourden08 repo: ESLint, stylelint and markdownlint rules, the writing gate, the structure and prose checks, tsconfig, knip and jscpd bases, templates and reusable workflows, with one extension API.",
   "type": "module",
   "license": "UNLICENSED",
