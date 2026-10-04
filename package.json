@@ -41,6 +41,7 @@
     "./sync": "./sync/index.mjs",
     "./presets/*": "./presets/*.mjs",
     "./tsconfig/*": "./tsconfig/*",
+    "./knip": "./cli/knip.mjs",
     "./knip/*": "./knip/*",
     "./jscpd/*": "./jscpd/*",
     "./templates/*": "./templates/*",
