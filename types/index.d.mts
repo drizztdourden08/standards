@@ -80,6 +80,17 @@ export interface Extension {
   stylelint?: StylelintFacet;
   markdownlint?: MarkdownlintFacet;
   prose?: ProseFacet;
+  knip?: KnipFacet;
+}
+
+/** turns a source file into the text knip reads, e.g. example imports into re-exports */
+export type KnipCompiler = (text: string, path: string) => string;
+
+export interface KnipFacet {
+  /** by file extension, with or without the dot; the compilers of several extensions for one key run in load order */
+  compilers?: Record<string, KnipCompiler>;
+  /** joined into the knip.json entry list, and into each workspace that lists its own entry (packageDir is then that workspace) */
+  entry?: string[] | ((ctx: OptionsContext) => string[]);
 }
 
 export type PresetName = 'base' | 'library' | 'design-system' | 'react-app';

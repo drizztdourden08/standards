@@ -8,7 +8,8 @@ const USAGE = `standards <command> [--root <dir>]
   lint                 typecheck, eslint, stylelint, prose, knip and jscpd in one run
   structure [--check]  the folder standard: package names, barrels, folder names, depth, component and module shapes
   prose                the writing gate over every tracked text file the other linters skip
-  knip [args]          knip with every git-ignored path under ignore, in place of its own .gitignore reading
+  knip [args]          knip with every git-ignored path under ignore, in place of its own .gitignore reading,
+                       plus the compilers and entries of the extensions' knip facets
   sync [--check]       compare .npmrc, the changeset config, .jscpd.json and knip.json with the templates,
                        and fail when two copies of @drizztdourden08/standards resolve in one install
 

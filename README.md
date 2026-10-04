@@ -41,7 +41,8 @@ Each factory returns its config synchronously, so a config file default-exports 
 standards lint                 typecheck, eslint, stylelint, prose, knip and jscpd; every step runs, the failures are listed at the end
 standards structure [--check]  package names, barrels, folder names, depth, component and module folder shapes
 standards prose                the writing gate over every tracked text file the other linters skip
-standards knip [args]          knip with the git-ignored paths under ignore, in place of its own .gitignore reading
+standards knip [args]          knip with the git-ignored paths under ignore, in place of its own .gitignore reading,
+                               plus the compilers and entries of the extensions' knip facets
 standards sync --check         .npmrc, .gitignore, the changeset config, .jscpd.json and knip.json against the templates,
                                and a failure when two copies of @drizztdourden08/standards resolve in one install
                                (copies the install reaches; folders pnpm left in .pnpm after an upgrade do not count),
@@ -54,6 +55,8 @@ Every check skips what git ignores. The ESLint, stylelint and markdownlint facto
 
 Every folder that needs ignoring is a dot-folder. `templates/gitignore` opens with a note on that rule, ignores every dot-folder with `.*/`, and lists the tracked ones (`.github/`, `.changeset/`, `.vscode/extensions.json`) as exceptions; `standards sync --check` reports a `.gitignore` that lacks `.*/` or names one dot-folder `.*/` already covers. `standards knip` runs knip with `--no-gitignore` and the git-ignored paths under `ignore`, because knip's own `.gitignore` reading matches `.*/` against the folders above a work tree and ignores every file in a work tree that lives inside a dot-folder.
 
+When the repo has a `knip.json` (or `.knip.json`), `standards knip` writes `node_modules/.cache/standards/knip.config.mjs` on every run and passes it to knip with `--config`. The module holds the repo config with the git-ignored paths under `ignore`, loads the repo's extensions with `loadStandards`, and merges in their [`knip` facets](#the-knip-facet); a repo whose extensions have none gets its `knip.json` as is. Configuration hints still name `knip.json`. Without a `knip.json`, knip finds its own config and the knip facets do not apply; `standards knip` says so when an extension has one.
+
 ## Presets
 
 | Preset | Adds to the core |
@@ -65,7 +68,7 @@ Every folder that needs ignoring is a dot-folder. `templates/gitignore` opens wi
 
 ## The extension API
 
-An extension is a plain object with an `id` and any of five facets. `defineExtension` checks the shape and returns it.
+An extension is a plain object with an `id` and any of six facets. `defineExtension` checks the shape and returns it.
 
 ```js
 // node_modules/@acme/module-widgets/standards.extension.mjs
@@ -89,6 +92,7 @@ export default defineExtension({
   stylelint: { plugins: [], rules: {}, options: { tokens: ['@acme/kit/tokens.css'] } },
   markdownlint: { customRules: [], config: {} },
   prose: { banned: ['frobnicate'], allow: ['widgetize'] },
+  knip: { compilers: { ts: widgetImports }, entry: ({ rootDir }) => widgetFilesOf(rootDir) },
 });
 ```
 
@@ -105,6 +109,8 @@ export default defineExtension({
 | `stylelint` | `plugins`, `rules`, `options` | plugin paths, rules, factory options such as `tokens`, or a function that returns them |
 | `markdownlint` | `customRules`, `config` | markdownlint-cli2 custom rules and rule config |
 | `prose` | `banned`, `allow` | words the writing gate reports or skips, in ESLint, markdownlint and `standards prose` alike |
+| `knip` | `compilers` | `{ [ext]: (text, path) => string }`, what knip reads in place of each file of that extension (see below) |
+| | `entry` | entry patterns, or a function `(ctx) => string[]` |
 
 ### Options computed from the repo
 
@@ -124,6 +130,22 @@ export default defineExtension({
 | `packageDir` | the `packageDir` given to the factory, else the workspace package below `rootDir` that holds the working folder; absent when the run starts at the root |
 
 A monorepo linted from its root gets `rootDir` alone and returns globs relative to it; a package that runs its own config gets its `packageDir` too. Plain-object options keep working, and both forms mix in one repo. `facetOptions(extensions, name, ctx)` exposes the same merge; without `ctx` it uses the nearest root above the working folder.
+
+### The knip facet
+
+A knip config file in JSON cannot hold a function, so `standards knip` hands knip a generated module (see [the command](#the-command)) that merges the `knip` facets of the loaded extensions into the repo's `knip.json`:
+
+- `compilers` join knip's `compilers` by file extension, with or without the leading dot. When several extensions give the same extension a compiler, they run in load order, each one reading what the one before returned. A function replaces a `true` the repo config gives the same extension.
+- `entry` joins the top-level `entry` list; a function is called with the context of the run, as `options` functions are. In a config with `workspaces`, the entries also join every workspace that lists its own `entry`, and the function is called again for each with `packageDir` set to that workspace folder; a workspace without an `entry` list keeps knip's default entries.
+
+```js
+export default defineExtension({
+  id: 'kit',
+  knip: { compilers: { ts: usageExampleImports }, entry: ({ packageDir, rootDir }) => usageFilesOf(packageDir ?? rootDir) },
+});
+```
+
+Here `usageExampleImports(text, path)` turns the example imports of a usage file into re-exports, so knip counts an export that only the examples name as used.
 
 The existing rule ids stay: `local/*` in ESLint, `BROCK001` to `BROCK006` in markdownlint (`BROCK007`, `no-tool-brand-words`, is new beside `local/no-tool-brand-words`), `brock/no-token-*` in stylelint, so disable comments keep working.
 

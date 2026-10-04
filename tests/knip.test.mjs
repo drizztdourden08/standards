@@ -22,7 +22,7 @@ describe('dropGitIgnoredHints', () => {
   it('drops the unused-ignore hints of git-ignored paths and names the repo config', () => {
     const root = tempTree({ 'cache/git-ignored.json': { source: 'knip.json', ignore: ['gen/**'] } });
     const hints = [{ type: 'ignore', identifier: 'gen/**' }, { type: 'ignore', identifier: 'vendor/**' }, { type: 'ignoreDependencies', identifier: 'react' }];
-    const out = dropGitIgnoredHints({ cwd: root, configFilePath: join(root, 'cache', 'knip.json'), configurationHints: hints });
+    const out = dropGitIgnoredHints({ cwd: root, configFilePath: join(root, 'cache', 'knip.config.mjs'), configurationHints: hints });
     expect(out.configurationHints).toEqual(hints.slice(1));
     expect(out.configFilePath).toBe(join(root, 'knip.json'));
   });
