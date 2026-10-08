@@ -5,7 +5,7 @@ Every release of every drizztdourden08 repo has a release note. It is one hand-w
 
 ## The file
 
-`release-notes/v<version>.md` at the repo root, one per version: `release-notes/v0.9.0.md` for 0.9.0, `release-notes/v1.0.0-beta.1.md` for a pre-release.
+`release-notes/v<version>.md` at the repo root, one per version: `release-notes/v0.9.0.md` for 0.9.0, `release-notes/v1.0.0-beta.1.md` for a pre-release. A repo that releases several products on their own versions keeps each product's notes in its folder, `<product folder>/release-notes/v<version>.md`, as a Brock workspace with several apps does; the format is the same.
 
 ```md
 # Atlas v1.2.0
