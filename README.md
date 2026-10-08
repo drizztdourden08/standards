@@ -3,7 +3,7 @@
 
 The rules every drizztdourden08 repo shares, in one package: the ESLint rules and factory, the stylelint token rules, the markdownlint rules, the writing gate and its word lists, the structure and prose checks, tsconfig, knip and jscpd bases, the `.npmrc` and changeset templates, and the reusable CI and release workflows. A repo extends it with only what it adds, through one extension API.
 
-The structure guide is [docs/structure.md](docs/structure.md). Moving a repo onto the package is in [MIGRATION-CONSUMERS.md](MIGRATION-CONSUMERS.md).
+The structure guide is [docs/structure.md](docs/structure.md), and the release note standard every repo follows is [docs/release-notes.md](docs/release-notes.md). Moving a repo onto the package is in [MIGRATION-CONSUMERS.md](MIGRATION-CONSUMERS.md).
 
 ## Install
 
@@ -47,6 +47,10 @@ standards sync --check         .npmrc, .gitignore, the changeset config, .jscpd.
                                and a failure when two copies of @drizztdourden08/standards resolve in one install
                                (copies the install reaches; folders pnpm left in .pnpm after an upgrade do not count),
                                and a failure for any changeset that asks for a major bump
+standards release-notes check [version]
+                               the release note of the version being released: release-notes/v<version>.md,
+                               its title, summary, sections and plain-English bullets (docs/release-notes.md);
+                               draft, version, body and current serve the release workflow
 ```
 
 Each command loads its code on first use, so `standards prose` never loads ESLint.
@@ -68,7 +72,7 @@ When the repo has a `knip.json` (or `.knip.json`), `standards knip` writes `node
 
 ## The extension API
 
-An extension is a plain object with an `id` and any of six facets. `defineExtension` checks the shape and returns it.
+An extension is a plain object with an `id` and any of seven facets. `defineExtension` checks the shape and returns it.
 
 ```js
 // node_modules/@acme/module-widgets/standards.extension.mjs
@@ -93,6 +97,7 @@ export default defineExtension({
   markdownlint: { customRules: [], config: {} },
   prose: { banned: ['frobnicate'], allow: ['widgetize'] },
   knip: { compilers: { ts: widgetImports }, entry: ({ rootDir }) => widgetFilesOf(rootDir) },
+  releaseNotes: { sections: ['Widgets'] },
 });
 ```
 
@@ -111,6 +116,8 @@ export default defineExtension({
 | `prose` | `banned`, `allow` | words the writing gate reports or skips, in ESLint, markdownlint and `standards prose` alike |
 | `knip` | `compilers` | `{ [ext]: (text, path) => string }`, what knip reads in place of each file of that extension (see below) |
 | | `entry` | entry patterns, or a function `(ctx) => string[]` |
+| `releaseNotes` | `sections` | `##` sections a release note may use beside the base ones ([docs/release-notes.md](docs/release-notes.md)) |
+| | `product` | the product a note title names, when the repo's `options.releaseNotes.product` does not set it |
 
 ### Options computed from the repo
 
@@ -190,7 +197,7 @@ The core allows `{Name}.usage.ts` in every component folder and requires it nowh
 | `tsconfig/base.json`, `node.json`, `react.json` | `extends` targets |
 | `knip/base.json`, `jscpd/base.json` | the shared keys `standards sync --check` compares |
 | `templates/npmrc`, `templates/changeset-config.json` | the `.npmrc` lines and changeset keys every repo carries |
-| `.github/workflows/ci.yml`, `release.yml` | reusable workflows (`workflow_call`) |
+| `.github/workflows/ci.yml`, `release.yml` | reusable workflows (`workflow_call`); both take `release-notes`, the command of the release note standard, and `release.yml` drafts the note in the version pull request and releases `v<version>` from it |
 
 ```yaml
 jobs:

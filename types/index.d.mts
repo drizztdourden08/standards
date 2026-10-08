@@ -81,6 +81,14 @@ export interface Extension {
   markdownlint?: MarkdownlintFacet;
   prose?: ProseFacet;
   knip?: KnipFacet;
+  releaseNotes?: ReleaseNotesFacet;
+}
+
+export interface ReleaseNotesFacet {
+  /** ## sections a note may use beside the base ones (New, Changes, View, Settings, Around the app, Platforms, Under the hood, Upgrading, Fixes) */
+  sections?: string[];
+  /** the product the title names, as in "# <product> v1.2.0" */
+  product?: string;
 }
 
 /** turns a source file into the text knip reads, e.g. example imports into re-exports */
@@ -109,6 +117,8 @@ export interface StandardsConfig {
     stylelint?: Partial<StylelintOptions>;
     markdownlint?: Record<string, unknown>;
     lint?: { stylelint?: string[]; skip?: ('typecheck' | 'eslint' | 'stylelint' | 'prose' | 'knip' | 'jscpd')[] };
+    /** the release note standard; package names the package whose version names the release when several versions are published */
+    releaseNotes?: ReleaseNotesFacet & { package?: string };
   };
 }
 

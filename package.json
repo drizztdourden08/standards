@@ -43,6 +43,7 @@
     "./tsconfig/*": "./tsconfig/*",
     "./knip": "./cli/knip.mjs",
     "./knip/*": "./knip/*",
+    "./release-notes": "./release-notes/index.mjs",
     "./jscpd/*": "./jscpd/*",
     "./templates/*": "./templates/*",
     "./package.json": "./package.json"
@@ -63,6 +64,7 @@
     "presets",
     "tsconfig",
     "knip",
+    "release-notes",
     "jscpd",
     "templates",
     "docs",

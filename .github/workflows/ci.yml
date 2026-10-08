@@ -19,6 +19,10 @@ on:
         description: also run standards sync --check (the repo has @drizztdourden08/standards as a direct dependency)
         type: boolean
         default: true
+      release-notes:
+        description: the command that runs the release note standard (check, draft, version, body, current); empty turns the check off
+        type: string
+        default: pnpm exec standards release-notes
 
 jobs:
   gate:
@@ -44,6 +48,16 @@ jobs:
       - name: Shared files and one copy of standards
         if: ${{ inputs.sync-check }}
         run: pnpm exec standards sync --check
+      - name: Release notes
+        if: ${{ inputs.release-notes != '' }}
+        env:
+          NOTES: ${{ inputs.release-notes }}
+        run: |
+          if $NOTES help > /dev/null 2>&1; then
+            $NOTES check
+          else
+            echo "::notice::This install has no release note standard yet (@drizztdourden08/standards 0.8.0 adds it)."
+          fi
       - name: Gate scripts
         env:
           SCRIPTS: ${{ inputs.scripts }}
