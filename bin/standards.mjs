@@ -12,6 +12,9 @@ const USAGE = `standards <command> [--root <dir>]
                        plus the compilers and entries of the extensions' knip facets
   sync [--check]       compare .npmrc, the changeset config, .jscpd.json and knip.json with the templates,
                        and fail when two copies of @drizztdourden08/standards resolve in one install
+  release-notes <check | draft | version | body | current> [version]
+                       the release note standard: check a note, draft one from the changelogs, version
+                       and draft in one step, print a note as a release body
 
 Options:
   --root <dir>         repo root (default: the current directory)
@@ -25,7 +28,10 @@ const COMMANDS = {
   prose: async () => (await import('../prose/index.mjs')).runProse,
   sync: async () => (await import('../sync/index.mjs')).runSync,
   knip: async () => (await import('../cli/knip.mjs')).runKnip,
+  'release-notes': async () => (await import('../release-notes/index.mjs')).runReleaseNotes,
 };
+
+const WORD_COMMANDS = ['knip', 'release-notes'];
 
 const OPTIONS = {
   root: { type: 'string' },
@@ -35,7 +41,7 @@ const OPTIONS = {
 };
 
 const main = async () => {
-  if (process.argv[2] === 'knip') return (await COMMANDS.knip())({ rootDir: process.cwd(), args: process.argv.slice(3) });
+  if (WORD_COMMANDS.includes(process.argv[2])) return (await COMMANDS[process.argv[2]]())({ rootDir: process.cwd(), args: process.argv.slice(3) });
   const { values, positionals } = parseArgs({ args: process.argv.slice(2), options: OPTIONS, allowPositionals: true });
   const [command] = positionals;
   if (values.help || !COMMANDS[command]) {

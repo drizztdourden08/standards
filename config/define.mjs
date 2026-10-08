@@ -1,8 +1,9 @@
 /* @layer tooling-scripts @kind logic */
-const FACETS = ['structure', 'eslint', 'stylelint', 'markdownlint', 'prose', 'knip'];
+const FACETS = ['structure', 'eslint', 'stylelint', 'markdownlint', 'prose', 'knip', 'releaseNotes'];
 const META = ['id', 'description'];
 const CONFIG_KEYS = ['presets', 'extensions', 'options', 'discover'];
 const KNIP_KEYS = ['compilers', 'entry'];
+const RELEASE_NOTES_KEYS = ['sections', 'product'];
 
 const isRecord = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
 const isStringList = (value) => Array.isArray(value) && value.every((item) => typeof item === 'string');
@@ -26,6 +27,17 @@ const knipProblems = (knip) => {
   ];
 };
 
+const releaseNotesProblems = (facet) => {
+  if (facet === undefined) return [];
+  if (!isRecord(facet)) return ['releaseNotes must be an object'];
+  const unknown = Object.keys(facet).filter((key) => !RELEASE_NOTES_KEYS.includes(key));
+  return [
+    ...(unknown.length ? [`unknown releaseNotes key ${unknown.join(', ')}; the keys are ${RELEASE_NOTES_KEYS.join(', ')}`] : []),
+    ...(facet.sections === undefined || isStringList(facet.sections) ? [] : ['releaseNotes.sections must be a string array']),
+    ...(facet.product === undefined || typeof facet.product === 'string' ? [] : ['releaseNotes.product must be a string']),
+  ];
+};
+
 /**
  * @param {Record<string, unknown>} extension
  * @returns {Record<string, unknown>}
@@ -34,7 +46,7 @@ const defineExtension = (extension) => {
   if (typeof extension?.id !== 'string' || !extension.id.trim()) throw new Error('defineExtension: an extension needs a non-empty id');
   const unknown = Object.keys(extension).filter((key) => !META.includes(key) && !FACETS.includes(key));
   if (unknown.length) throw new Error(`defineExtension(${extension.id}): unknown key ${unknown.join(', ')}; the facets are ${FACETS.join(', ')}`);
-  const problems = knipProblems(extension.knip);
+  const problems = [...knipProblems(extension.knip), ...releaseNotesProblems(extension.releaseNotes)];
   if (problems.length) throw new Error(`defineExtension(${extension.id}): ${problems.join('; ')}`);
   return extension;
 };

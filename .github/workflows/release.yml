@@ -19,6 +19,10 @@ on:
         description: the command that publishes the versioned packages
         type: string
         default: pnpm changeset publish
+      release-notes:
+        description: the command that runs the release note standard (check, draft, version, body, current); empty keeps the changeset releases
+        type: string
+        default: pnpm exec standards release-notes
 
 jobs:
   release:
@@ -39,12 +43,50 @@ jobs:
       - run: pnpm install --frozen-lockfile
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # The version pull request carries release-notes/v<version>.md, drafted from the changelogs.
+      # It stays a draft until someone rewrites it for users, and nothing publishes while it is one.
+      - name: Release notes
+        id: notes
+        env:
+          NOTES: ${{ inputs.release-notes }}
+        run: |
+          if [ -n "$NOTES" ] && $NOTES help > /dev/null 2>&1; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::No release note standard in this install; the changeset releases stay."
+          fi
+      - name: The note of the version about to publish
+        if: steps.notes.outputs.enabled == 'true'
+        env:
+          NOTES: ${{ inputs.release-notes }}
+        run: |
+          PENDING=$(find .changeset -maxdepth 1 -name '*.md' ! -name README.md 2>/dev/null | wc -l)
+          if [ "$PENDING" -eq 0 ]; then $NOTES check; else echo "$PENDING changeset(s) pending: this run opens the version pull request."; fi
       - uses: changesets/action@v1
+        id: changesets
         with:
-          version: ${{ inputs.version }}
+          version: ${{ steps.notes.outputs.enabled == 'true' && format('{0} version', inputs.release-notes) || inputs.version }}
           publish: ${{ inputs.publish }}
           title: 'release: version packages'
           commit: 'release: version packages'
+          createGithubReleases: ${{ steps.notes.outputs.enabled != 'true' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          STANDARDS_VERSION_COMMAND: ${{ inputs.version }}
+      - name: The GitHub release, from the note
+        if: steps.changesets.outputs.published == 'true' && steps.notes.outputs.enabled == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NOTES: ${{ inputs.release-notes }}
+        run: |
+          VERSION=$($NOTES current)
+          TAG="v$VERSION"
+          $NOTES body "$VERSION" > release-body.md
+          TITLE=$(head -n 1 release-body.md | sed 's/^# //')
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            gh release edit "$TAG" --title "$TITLE" --notes-file release-body.md
+          else
+            gh release create "$TAG" --title "$TITLE" --notes-file release-body.md --target "$GITHUB_SHA"
+          fi
