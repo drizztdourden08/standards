@@ -46,7 +46,7 @@ Code spans and fenced code are not read as prose.
 A repo with areas of its own (an emulator's `Controllers`, a game's `Save states`) allows them in `standards.config.mjs`, or an extension brings them with its `releaseNotes` facet:
 
 ```js
-export default defineStandards({ options: { releaseNotes: { product: 'Relic of the Past', sections: ['Controllers', 'Save states'] } } });
+export default defineStandards({ options: { releaseNotes: { product: 'My App', sections: ['Controllers', 'Save states'] } } });
 
 export default defineExtension({ id: 'pads', releaseNotes: { sections: ['Controllers'] } });
 ```
