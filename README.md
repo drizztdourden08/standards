@@ -113,7 +113,7 @@ export default defineExtension({
 | | `options` | factory options, or a function `(ctx) => options` (see below): arrays join, objects merge, `rawControls` and `consoleGlobs` replace |
 | `stylelint` | `plugins`, `rules`, `options` | plugin paths, rules, factory options such as `tokens`, or a function that returns them |
 | `markdownlint` | `customRules`, `config` | markdownlint-cli2 custom rules and rule config |
-| `prose` | `banned`, `allow` | words the writing gate reports or skips, in ESLint, markdownlint and `standards prose` alike |
+| `prose` | `banned`, `allow` | words the writing gate reports or skips, in ESLint, markdownlint and `standards prose` alike; an `allow` entry that equals a declared name, case included, also passes that name through `local/no-slop-identifiers` ([docs/structure.md](docs/structure.md#exceptions-are-written-down-never-silent)) |
 | `knip` | `compilers` | `{ [ext]: (text, path) => string }`, what knip reads in place of each file of that extension (see below) |
 | | `entry` | entry patterns, or a function `(ctx) => string[]` |
 | `releaseNotes` | `sections` | `##` sections a release note may use beside the base ones ([docs/release-notes.md](docs/release-notes.md)) |

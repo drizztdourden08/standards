@@ -113,8 +113,8 @@ A disable without a reason fails (`reportDescriptionlessDisables`).
 | No dead code: every export is imported somewhere, every file is reachable from an entry, every dependency is used and every used package is declared. Entries per workspace live in `knip.json` | `knip` (`pnpm deadcode`) |
 | No duplicated code: no two blocks of 5 lines or 50 tokens alike across TS, JS and CSS | `jscpd` (`pnpm duplicates`), `.jscpd.json` from `jscpd/base.json` |
 | Exports are the last statements of a file; nothing follows the export block | `local/exports-last` |
-| No slop names: no `Helper`, `Util`, `Wrapper`, `Impl`, `Temp`, `V2` suffix, no `Enhanced`, `Improved`, `New`, `Simple`, `My` prefix, no `foo`, `tmp`, `dummy`, no numbered copies. A name says what the thing is for and never names a tool vendor: a segment from the banned word list (camelCase or snake_case) is reported | `local/no-slop-identifiers` |
-| No slop prose anywhere: dashes, smart quotes, emoji and glyphs, hedges (`you may want to`, `for now`, `should work`), stock phrases, connectors, filler adverbs, placeholders (`in a real app`, `implementation goes here`), exclamation marks, and the words a repo bans through a `prose` facet. Applies to comments, strings, JSX text, Markdown, and through `standards prose` to every other tracked text file (json, yaml, toml, html, svg, txt, config files) | `local/no-em-dash`, `local/no-smart-punctuation`, `local/no-slop-prose`, `BROCK001-006`, `standards prose` |
+| No slop names: no `Helper`, `Util`, `Wrapper`, `Impl`, `Temp`, `V2` suffix, no `Enhanced`, `Improved`, `New`, `Simple`, `My` prefix, no `foo`, `tmp`, `dummy`, no numbered copies. A name says what the thing is for and never names a tool vendor: a segment from the banned word list (camelCase or snake_case) is reported. A name the repo cannot change passes when the `allow` list names it whole, in its exact case (see below) | `local/no-slop-identifiers` |
+| No slop prose anywhere: dashes, smart quotes, emoji and glyphs, hedges (`you may want to`, `for now`, `should work`), stock phrases, connectors, filler adverbs, placeholders (`in a real app`, `implementation goes here`), exclamation marks, and the words a repo bans through a `prose` facet. Applies to comments, strings, JSX text, Markdown, and through `standards prose` to every other tracked text file (json, yaml, toml, html, svg, txt, config files). One string is not prose: the value a test asserts (see below) | `local/no-em-dash`, `local/no-smart-punctuation`, `local/no-slop-prose`, `BROCK001-006`, `standards prose` |
 | No tool or vendor names in comments, strings, JSX text, Markdown or any other tracked text file. The banned words are the `TOOL_BRAND_WORDS` list in `writing/slop-word-lists.mjs`, matched as whole words in any case | `local/no-tool-brand-words`, `BROCK007`, `standards prose` |
 | Every path git ignores (`.gitignore` files, `.git/info/exclude` and the global excludes file) is skipped by every check: ESLint, stylelint, markdownlint, `standards knip`, jscpd under `standards lint`, and `standards prose`. Every folder that needs ignoring is a dot-folder, and `.gitignore` ignores them all with `.*/`, with exceptions for the tracked ones. Code never points into an ignored folder | `config/git-ignored.mjs`, `standards sync --check` |
 | Markdown has no template shape: no `Overview`, `Summary`, `Key features` or `Conclusion` heading, no `- **Label:** text` bullet runs, no emoji headings | `BROCK004`, `BROCK005`, `BROCK006` |
@@ -140,6 +140,19 @@ Two more forms, both with a `why`: `glyphContent: [{ files, why }]` in `eslint.c
 ```
 src/fonts/LICENSE.txt   the font's licence, CC BY 3.0, travels unchanged
 src/fonts/README.txt    the font author's notes, travel unchanged
+```
+
+A name the repo cannot change goes on the `allow` list, the same list that lets a word through the prose rules: `options.allow` in `standards.config.mjs`, `allow` in the ESLint factory, or a `prose` facet. `local/no-slop-identifiers` passes a declared name that equals an entry exactly, case included. Each entry is one whole name, so `AdvancedEdition` does not pass `AdvancedSearch`, and `layoutv2` does not pass `layoutV2`. Two kinds of name belong there: a product name the people who use the app know (an edition called Advanced, declared as `AdvancedEdition`), and a key that saved files or settings already hold (`layoutV2`):
+
+```js
+export default defineStandards({ options: { allow: ['AdvancedEdition', 'layoutV2'] } });
+```
+
+A test asserts the real text the app shows, and that text is the app's, not prose the repo writes. In a `*.test.*` or `*.spec.*` file, a string that is the argument of a matcher called on `expect(actual)` is not read by `local/no-em-dash`, `local/no-smart-punctuation` or `local/no-slop-prose`. The string may sit in an array or an object value inside that argument, or in an asymmetric matcher such as `expect.stringContaining(...)`; `.not`, `.resolves`, `.rejects` and `expect.soft` count. Everything else in the test is read as before: the actual value inside `expect(...)`, the test names, and every other string. `local/no-tool-brand-words` reads the expected value too. The same text in source code fails as it always did.
+
+```ts
+expect(toast.text).toBe('File saved!');
+expect(lines).toEqual(['Upload done!', 'Saved to the shared folder!']);
 ```
 
 An `eslint-disable` line in a source file is the wrong place: it hides the exception where nobody looks for it. When a rule is wrong for a whole class of files, the fix is in `@drizztdourden08/standards`, or in the extension that owns the rule, not a disable in the consumer.

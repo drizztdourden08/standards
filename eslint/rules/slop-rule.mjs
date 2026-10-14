@@ -1,5 +1,6 @@
 /* @layer tooling-scripts @kind logic */
 import { DEFAULT_ALLOW, findSlop } from '../../writing/slop-patterns.mjs';
+import { expectedValueCheck } from './expected-value.mjs';
 
 const DIRECTIVE_COMMENT = /^\s*(eslint\b|eslint-|globals?\b|exported\b|@ts-|prettier-|istanbul\b|c8\b|v8\b|@jsx\b|#!)/;
 
@@ -15,6 +16,7 @@ const slopRule = (group, description) => ({
     const sourceCode = context.sourceCode ?? context.getSourceCode();
     const allow = context.options?.[0]?.allow ?? DEFAULT_ALLOW;
     const banned = context.options?.[0]?.banned;
+    const isExpectedValue = group === 'brand' ? () => false : expectedValueCheck(context);
     const scan = (start, text) => {
       for (const hit of findSlop(text, { allow, banned, groups: [group] })) {
         const at = start + hit.index;
@@ -37,11 +39,11 @@ const slopRule = (group, description) => ({
         }
       },
       Literal(node) {
-        if (typeof node.value !== 'string' || isModuleSpecifier(node)) return;
+        if (typeof node.value !== 'string' || isModuleSpecifier(node) || isExpectedValue(node)) return;
         if (group === 'prose' && /^[\w.:/-]*$/.test(node.value)) return;
         scan(node.range[0], sourceCode.getText(node));
       },
-      TemplateElement(node) { scan(node.range[0], sourceCode.getText(node)); },
+      TemplateElement(node) { if (!isExpectedValue(node)) scan(node.range[0], sourceCode.getText(node)); },
       JSXText(node) { scan(node.range[0], sourceCode.getText(node)); },
     };
   },

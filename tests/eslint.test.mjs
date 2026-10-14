@@ -1,17 +1,8 @@
 /* @layer tooling-scripts @kind test */
-import { join } from 'node:path';
-import { ESLint } from 'eslint';
 import { afterEach, describe, expect, it } from 'vitest';
-import { standardsEslint, LOCAL_RULES, RAW_CONTROLS } from '../eslint/index.mjs';
+import { LOCAL_RULES, RAW_CONTROLS } from '../eslint/index.mjs';
+import { HEADER, lint } from './lint-text.mjs';
 import { tempTree, removeTempTrees } from './temp-tree.mjs';
-
-const HEADER = '/* @layer tooling-scripts @kind logic */\n';
-
-const lint = async (root, file, code, options = {}) => {
-  const eslint = new ESLint({ cwd: root, overrideConfigFile: true, overrideConfig: standardsEslint({ rootDir: root, typed: false, ...options }) });
-  const [result] = await eslint.lintText(code, { filePath: join(root, file) });
-  return result.messages.map((message) => `${message.ruleId}: ${message.message}`);
-};
 
 afterEach(removeTempTrees);
 

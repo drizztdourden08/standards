@@ -69,6 +69,7 @@ export interface MarkdownlintFacet {
 
 export interface ProseFacet {
   banned?: string[];
+  /** words the writing gate skips; an entry that equals a declared name, case included, passes local/no-slop-identifiers too */
   allow?: string[];
 }
 
