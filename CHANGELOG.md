@@ -1,5 +1,12 @@
 # @drizztdourden08/standards
 
+## 0.9.0
+
+### Minor Changes
+
+- 00ad561: A test may assert the real text an app shows. In a `*.test.*` or `*.spec.*` file, a string that is the argument of a matcher called on `expect(actual)` (directly, in an array or object value, or in an asymmetric matcher such as `expect.stringContaining`) is not read by `local/no-em-dash`, `local/no-smart-punctuation` or `local/no-slop-prose`, so `expect(toast.text).toBe('File saved!')` passes. The actual value, test names, every other string in the test and the same text in source code are read as before, and `local/no-tool-brand-words` still reads the expected value. The rule is in `docs/structure.md`.
+- 00ad561: `local/no-slop-identifiers` takes an `allow` option, and the ESLint factory fills it from the same `allow` list the prose rules read: `options.allow` in `standards.config.mjs`, `allow` in the factory call, and every `prose` facet. A declared name passes when it equals an entry whole and in its exact case, so a product name (`AdvancedEdition`) or a key that saved files already hold (`layoutV2`) passes without a disable, and `AdvancedSearch` beside it is still reported. The list and its examples are in `docs/structure.md`.
+
 ## 0.8.0
 
 ### Minor Changes
