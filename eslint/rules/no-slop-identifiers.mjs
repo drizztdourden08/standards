@@ -31,11 +31,15 @@ const problemOf = (name) => {
   return null;
 };
 
+const ALLOW_SCHEMA = [{ type: 'object', properties: { allow: { type: 'array', items: { type: 'string' } } }, additionalProperties: false }];
+
 const noSlopIdentifiers = {
-  meta: { type: 'problem', docs: { description: 'No placeholder, qualifier-prefixed, shape-suffixed, numbered-copy or tool-vendor names at declaration sites' }, schema: [] },
+  meta: { type: 'problem', docs: { description: 'No placeholder, qualifier-prefixed, shape-suffixed, numbered-copy or tool-vendor names at declaration sites' }, schema: ALLOW_SCHEMA },
   create(context) {
+    const allowed = new Set(context.options?.[0]?.allow ?? []);
     return {
       [DECLARATIONS](node) {
+        if (allowed.has(node.name)) return;
         const problem = problemOf(node.name);
         if (problem) context.report({ node, message: `"${node.name}" is ${problem}.` });
       },

@@ -28,7 +28,7 @@ const standardsEslint = (input = {}) => {
     rules: {
       ...slopRules([...DEFAULT_ALLOW, ...words.allow], words.banned),
       ...(opts.boundaries === false ? {} : BOUNDARY_RULES),
-      'local/no-slop-identifiers': 'error',
+      'local/no-slop-identifiers': ['error', { allow: words.allow }],
       'local/exports-last': 'error',
       'local/file-header': 'error',
     },
