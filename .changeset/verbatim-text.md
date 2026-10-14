@@ -1,5 +1,0 @@
----
-'@drizztdourden08/standards': minor
----
-
-A source file that holds text reproduced word for word from an outside source (a game's dialogue table, a licence text, the strings a protocol defines) can be listed under `verbatimText: [{ files, why }]` in the ESLint factory; the factory refuses an entry without a `why`. In a listed file, `local/no-em-dash`, `local/no-smart-punctuation` and `local/no-slop-prose` skip string literals and the text parts of template literals, through their new `skipStringValues` option, which has no default. Comments, the header, JSX text and identifiers are read as before, and `local/no-tool-brand-words` does not take the option, so vendor names stay banned in those strings. The header tag may now name a source after the kind, `/* @layer <layer> @kind <kind> @source <short text> */`, and `local/file-header` and `local/no-comments` accept it. The rule is in `docs/structure.md`.
