@@ -41,7 +41,7 @@ const standardsEslint = (input = {}) => {
     tsBlock(opts, shared),
     jsBlock(shared),
     ...extensionRuleBlocks(facets),
-    ...exceptionBlocks(opts),
+    ...exceptionBlocks(opts, shared),
     ...extensionConfigs(facets),
     ...(opts.extra ?? []),
   );
