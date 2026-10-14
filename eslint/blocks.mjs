@@ -63,24 +63,30 @@ const settingsBlocks = (opts) => {
   return [{ settings: { standards: { fileKinds: opts.fileKinds ?? {}, oneExportExempt: opts.oneExportExempt ?? [] } } }];
 };
 
-const justified = (opts) => ({
+const VERBATIM_RULES = ['local/no-em-dash', 'local/no-smart-punctuation', 'local/no-slop-prose'];
+
+const verbatimRules = (sharedRules) =>
+  Object.fromEntries(VERBATIM_RULES.map((rule) => [rule, ['error', { ...sharedRules[rule][1], skipStringValues: true }]]));
+
+const justified = (opts, shared) => ({
   inlineStyle: { 'local/no-inline-style': 'off' },
   doubleCast: { 'no-restricted-syntax': withoutSyntax(NO_DOUBLE_CAST, rawControlsOf(opts)) },
   glyphContent: { 'local/no-smart-punctuation': 'off' },
   shapeOff: SHAPE_RULES_OFF,
+  verbatimText: verbatimRules(shared.rules),
 });
 
-const justifiedBlocks = (opts) =>
-  Object.entries(justified(opts)).flatMap(([label, rules]) => requireWhy(label, opts[label] ?? []).map((e) => ({ files: e.files, rules })));
+const justifiedBlocks = (opts, shared) =>
+  Object.entries(justified(opts, shared)).flatMap(([label, rules]) => requireWhy(label, opts[label] ?? []).map((e) => ({ files: e.files, rules })));
 
 const globBlock = (files, rules) => (files?.length ? [{ files, rules }] : []);
 
-const exceptionBlocks = (opts) => [
+const exceptionBlocks = (opts, shared) => [
   ...globBlock(opts.rawColorOffGlobs, { 'local/no-raw-color': 'off' }),
   ...globBlock(opts.primitivesGlobs, PRIMITIVE_RULES),
   { files: opts.consoleGlobs ?? DEFAULT_CONSOLE_GLOBS, rules: { 'no-console': 'off' } },
   { files: [...DEFAULT_EXPORT_GLOBS, ...(opts.defaultExportGlobs ?? [])], rules: { 'no-restricted-syntax': withoutSyntax(NO_DEFAULT_EXPORT) } },
-  ...justifiedBlocks(opts),
+  ...justifiedBlocks(opts, shared),
 ];
 
 const extensionRuleBlocks = (facets) =>

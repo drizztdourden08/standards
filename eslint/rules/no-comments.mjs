@@ -1,4 +1,6 @@
 /* @layer tooling-scripts @kind logic */
+import { HEADER_TAG } from '../file-shape.mjs';
+
 const DEFAULT_COMMENT_ALLOW = [
   '^\\s*\\*?\\s*eslint-(disable|enable)\\b',
   '^\\s*\\*?\\s*globals?\\b',
@@ -11,7 +13,6 @@ const DEFAULT_COMMENT_ALLOW = [
   '^\\s*\\*?\\s*@vite-ignore\\b',
 ];
 
-const HEADER_TAG = /^\s*@layer\s+[\w-]+\s+@kind\s+[\w-]+\s*$/;
 const JSDOC_TAG = /^@(typedef|param|returns?|type|template|property|callback|import)\b/;
 const JSDOC_MAX_LINES = 10;
 const JSDOC_MAX_TRAIL = 60;

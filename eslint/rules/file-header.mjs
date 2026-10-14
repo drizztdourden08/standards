@@ -1,5 +1,6 @@
 /* @layer tooling-scripts @kind logic */
-const HEADER_TAG = /^\s*@layer\s+[\w-]+\s+@kind\s+[\w-]+\s*$/;
+import { HEADER_TAG } from '../file-shape.mjs';
+
 const HEADER_FORM = '/* @layer <layer> @kind <kind> */';
 
 const fileHeader = {

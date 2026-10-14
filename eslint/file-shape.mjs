@@ -14,6 +14,7 @@ const SHAPE_OFF_KINDS = ['story', 'test', 'config'];
 const ONE_EXPORT_EXEMPT = ['barrel', 'types', 'constants', 'story', 'test', 'config'];
 const GLOBAL_STYLESHEET = /(^|\/)(?:theme|tokens|reset|fonts)[^/]*\.css$|\/(?:theme|tokens)\//;
 const UPPER_SNAKE = /^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+$|^[A-Z]{2,}[A-Z0-9]*$/;
+const HEADER_TAG = /^\s*@layer\s+[\w-]+\s+@kind\s+[\w-]+(?:\s+@source\s+\S.*?)?\s*$/;
 const HOOK_NAME = /^use[A-Z]\w*$/;
 const COMPONENT_NAME = /^[A-Z]\w*$/;
 
@@ -42,4 +43,4 @@ const baseNameOf = (file) => normalize(file).split('/').at(-1)?.replace(/\.[^.]+
 const typeFileFor = (file) => `${baseNameOf(file)}.type.ts`;
 const constantsFileFor = (file) => `${baseNameOf(file)}.constants.ts`;
 
-export { FILE_KIND, SHAPE_OFF_KINDS, ONE_EXPORT_EXEMPT, oneExportExempt, GLOBAL_STYLESHEET, UPPER_SNAKE, HOOK_NAME, COMPONENT_NAME, normalize, kindsOf, hasKind, baseNameOf, typeFileFor, constantsFileFor };
+export { FILE_KIND, SHAPE_OFF_KINDS, ONE_EXPORT_EXEMPT, oneExportExempt, GLOBAL_STYLESHEET, HEADER_TAG, UPPER_SNAKE, HOOK_NAME, COMPONENT_NAME, normalize, kindsOf, hasKind, baseNameOf, typeFileFor, constantsFileFor };

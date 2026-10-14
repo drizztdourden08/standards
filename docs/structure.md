@@ -58,7 +58,7 @@ settings/features/                    a module folder: no .tsx of its own name
 
 | Rule | Enforced by |
 |---|---|
-| Every file opens with its header tag, `/* @layer <layer> @kind <kind> */` (after a shebang when there is one) | `local/file-header` |
+| Every file opens with its header tag, `/* @layer <layer> @kind <kind> */` (after a shebang when there is one); a file reproduced from an outside source may name it after the kind, `@source <short text>` | `local/file-header` |
 | One component per `.tsx`; the second one is `sub-components/<Name>.tsx` | `local/one-component-per-file` |
 | One exported value per implementation file; `index.ts`, `*.type.ts` and `*.constants.ts` are the lists | `local/one-export-per-file` |
 | `type` and `interface` live in `*.type.ts` (`augment.ts` and `*.d.ts` too) | `local/types-in-type-file` |
@@ -153,6 +153,14 @@ A test asserts the real text the app shows, and that text is the app's, not pros
 ```ts
 expect(toast.text).toBe('File saved!');
 expect(lines).toEqual(['Upload done!', 'Saved to the shared folder!']);
+```
+
+A source file can hold text reproduced word for word from an outside source, text the app must show exactly as it is: the dialogue table of a game, a licence text, the strings a protocol defines. Rewording it would change what the app shows, so such a file goes under `verbatimText: [{ files, why }]` in `eslint.config.mjs`, and the `why` names the source. In a listed file, `local/no-em-dash`, `local/no-smart-punctuation` and `local/no-slop-prose` skip the string values: string literals and the text parts of template literals. Comments, the header, JSX text and identifiers are read as before, and `local/no-tool-brand-words` reads the strings too. The factory turns on the rules' `skipStringValues` option for those files; the option has no default, and the vendor-name rule does not take it. The header of such a file can name its source as well, `/* @layer <layer> @kind <kind> @source <short text> */`, which `local/file-header` and `local/no-comments` accept.
+
+```js
+export default standardsEslint({
+  verbatimText: [{ files: ['src/legal/font-licence.ts'], why: 'the font licence, SIL OFL 1.1, shown unchanged in the About screen' }],
+});
 ```
 
 An `eslint-disable` line in a source file is the wrong place: it hides the exception where nobody looks for it. When a rule is wrong for a whole class of files, the fix is in `@drizztdourden08/standards`, or in the extension that owns the rule, not a disable in the consumer.

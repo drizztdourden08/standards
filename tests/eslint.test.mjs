@@ -25,6 +25,14 @@ describe('local/file-header', () => {
     expect(await lint(root, 'a.mjs', `#!/usr/bin/env node\n${HEADER}const a = 1;\n\nexport { a };\n`)).toEqual([]);
   });
 
+  it('passes a header that names its source, and reports a source tag with no text', async () => {
+    const root = tempTree({ 'package.json': { name: 'x' } });
+    const code = (header) => `${header}\nconst a = 1;\n\nexport { a };\n`;
+    expect(await lint(root, 'a.mjs', code('/* @layer shared-data @kind data @source the licence text of a font, version 1.1 */'))).toEqual([]);
+    const messages = await lint(root, 'a.mjs', code('/* @layer shared-data @kind data @source */'));
+    expect(messages.filter((m) => /^local\/(?:file-header|no-comments)/.test(m))).toHaveLength(2);
+  });
+
   it('reports a header that comes after code', async () => {
     const root = tempTree({ 'package.json': { name: 'x' } });
     const messages = await lint(root, 'a.mjs', `const a = 1;\n${HEADER}\nexport { a };\n`);

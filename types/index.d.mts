@@ -151,6 +151,8 @@ export interface EslintOptions extends Loading {
   doubleCast?: Justified[];
   glyphContent?: Justified[];
   shapeOff?: Justified[];
+  /** files whose string values are text reproduced from an outside source; the dash, punctuation and prose rules skip their string values */
+  verbatimText?: Justified[];
   comments?: { allow?: string[] };
   rawControls?: { selector: string; message: string }[];
   fileKinds?: Record<string, string | string[]>;

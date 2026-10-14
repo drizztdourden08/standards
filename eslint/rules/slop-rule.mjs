@@ -4,19 +4,23 @@ import { expectedValueCheck } from './expected-value.mjs';
 
 const DIRECTIVE_COMMENT = /^\s*(eslint\b|eslint-|globals?\b|exported\b|@ts-|prettier-|istanbul\b|c8\b|v8\b|@jsx\b|#!)/;
 
-const SLOP_SCHEMA = [{
+const WORD_LISTS = { allow: { type: 'array', items: { type: 'string' } }, banned: { type: 'array', items: { type: 'string' } } };
+
+const slopSchema = (group) => [{
   type: 'object',
-  properties: { allow: { type: 'array', items: { type: 'string' } }, banned: { type: 'array', items: { type: 'string' } } },
+  properties: group === 'brand' ? WORD_LISTS : { ...WORD_LISTS, skipStringValues: { type: 'boolean' } },
   additionalProperties: false,
 }];
 
 const slopRule = (group, description) => ({
-  meta: { type: 'problem', docs: { description }, schema: SLOP_SCHEMA },
+  meta: { type: 'problem', docs: { description }, schema: slopSchema(group) },
   create(context) {
     const sourceCode = context.sourceCode ?? context.getSourceCode();
     const allow = context.options?.[0]?.allow ?? DEFAULT_ALLOW;
     const banned = context.options?.[0]?.banned;
-    const isExpectedValue = group === 'brand' ? () => false : expectedValueCheck(context);
+    const skipStringValues = context.options?.[0]?.skipStringValues === true;
+    const expectedValue = group === 'brand' ? () => false : expectedValueCheck(context);
+    const isExpectedValue = (node) => skipStringValues || expectedValue(node);
     const scan = (start, text) => {
       for (const hit of findSlop(text, { allow, banned, groups: [group] })) {
         const at = start + hit.index;
