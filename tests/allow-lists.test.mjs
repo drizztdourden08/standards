@@ -77,6 +77,8 @@ describe('verbatim text', () => {
     const root = tempTree({ 'package.json': { name: 'x' } });
     return (await lint(root, file, `${HEADER}${lines.join('\n')}\n`, options)).filter((m) => WRITING.test(m));
   };
+  const ENTRY = ["const ENTRIES = { avoir: 'ai' };", '', 'export { ENTRIES };'];
+  const VENDOR_HIT = 'local/no-tool-brand-words: "ai": These projects do not name this kind of tool or its vendor. Say what the code does, or delete the word.';
   const TABLE = [`const LINES = ['File saved!', \`Saved${DASH}twice\`, { greeting: 'Welcome back!' }];`, '', 'export { LINES };'];
 
   it('skips the string values of a listed file', async () => {
@@ -88,10 +90,25 @@ describe('verbatim text', () => {
     expect(await hits(DIALOGUE, TABLE, {})).toHaveLength(3);
   });
 
-  it('keeps tool and vendor names banned in a listed file', async () => {
-    expect(await hits(DIALOGUE, ["const LINES = ['Ask the chatbot'];", '', 'export { LINES };'])).toEqual([
-      'local/no-tool-brand-words: "chatbot": These projects do not name this kind of tool or its vendor. Say what the code does, or delete the word.',
-    ]);
+  it('skips a tool or vendor name in the string values of a listed file', async () => {
+    expect(await hits(DIALOGUE, ENTRY)).toEqual([]);
+  });
+
+  it('reads a tool or vendor name in the comments and identifiers of a listed file', async () => {
+    expect(await hits(DIALOGUE, [...ENTRY, '// the ai entry of the dictionary'])).toEqual([VENDOR_HIT]);
+    const root = tempTree({ 'package.json': { name: 'x' } });
+    const code = `${HEADER}const aiEntry = 'ai';
+
+export { aiEntry };
+`;
+    const messages = await lint(root, DIALOGUE, code, VERBATIM);
+    expect(messages.filter((m) => m.startsWith('local/no-slop-identifiers'))).toHaveLength(1);
+    expect(messages.filter((m) => WRITING.test(m))).toEqual([]);
+  });
+
+  it('reads a tool or vendor name in the strings of a file the list does not name', async () => {
+    expect(await hits('src/menu.mjs', ENTRY)).toEqual([VENDOR_HIT]);
+    expect(await hits(DIALOGUE, ENTRY, {})).toEqual([VENDOR_HIT]);
   });
 
   it('still reads the comments of a listed file', async () => {
@@ -103,9 +120,10 @@ describe('verbatim text', () => {
     expect(() => standardsEslint({ rootDir: root, typed: false, verbatimText: [{ files: [DIALOGUE], why: ' ' }] })).toThrow('verbatimText exception for src/dialogue.mjs needs a why');
   });
 
-  it('takes skipStringValues on the dash, punctuation and prose rules, not on the vendor-name rule', async () => {
-    const withOption = (rule) => ({ extra: [{ files: ['**/*.mjs'], rules: { [rule]: ['error', { skipStringValues: true }] } }] });
-    expect(await hits('src/menu.mjs', TABLE, withOption('local/no-em-dash'))).toHaveLength(2);
-    await expect(hits('src/menu.mjs', TABLE, withOption('local/no-tool-brand-words'))).rejects.toThrow(/skipStringValues|additional properties/);
+  it('takes skipStringValues on all four writing rules, off unless set', async () => {
+    const withOption = (rule, skipStringValues) => ({ extra: [{ files: ['**/*.mjs'], rules: { [rule]: ['error', { skipStringValues }] } }] });
+    expect(await hits('src/menu.mjs', TABLE, withOption('local/no-em-dash', true))).toHaveLength(2);
+    expect(await hits('src/menu.mjs', ENTRY, withOption('local/no-tool-brand-words', true))).toEqual([]);
+    expect(await hits('src/menu.mjs', ENTRY, withOption('local/no-tool-brand-words', false))).toEqual([VENDOR_HIT]);
   });
 });
