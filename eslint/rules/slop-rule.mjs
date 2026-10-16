@@ -4,16 +4,14 @@ import { expectedValueCheck } from './expected-value.mjs';
 
 const DIRECTIVE_COMMENT = /^\s*(eslint\b|eslint-|globals?\b|exported\b|@ts-|prettier-|istanbul\b|c8\b|v8\b|@jsx\b|#!)/;
 
-const WORD_LISTS = { allow: { type: 'array', items: { type: 'string' } }, banned: { type: 'array', items: { type: 'string' } } };
-
-const slopSchema = (group) => [{
+const SLOP_SCHEMA = [{
   type: 'object',
-  properties: group === 'brand' ? WORD_LISTS : { ...WORD_LISTS, skipStringValues: { type: 'boolean' } },
+  properties: { allow: { type: 'array', items: { type: 'string' } }, banned: { type: 'array', items: { type: 'string' } }, skipStringValues: { type: 'boolean' } },
   additionalProperties: false,
 }];
 
 const slopRule = (group, description) => ({
-  meta: { type: 'problem', docs: { description }, schema: slopSchema(group) },
+  meta: { type: 'problem', docs: { description }, schema: SLOP_SCHEMA },
   create(context) {
     const sourceCode = context.sourceCode ?? context.getSourceCode();
     const allow = context.options?.[0]?.allow ?? DEFAULT_ALLOW;

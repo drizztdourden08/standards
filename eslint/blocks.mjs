@@ -63,7 +63,7 @@ const settingsBlocks = (opts) => {
   return [{ settings: { standards: { fileKinds: opts.fileKinds ?? {}, oneExportExempt: opts.oneExportExempt ?? [] } } }];
 };
 
-const VERBATIM_RULES = ['local/no-em-dash', 'local/no-smart-punctuation', 'local/no-slop-prose'];
+const VERBATIM_RULES = ['local/no-em-dash', 'local/no-smart-punctuation', 'local/no-slop-prose', 'local/no-tool-brand-words'];
 
 const verbatimRules = (sharedRules) =>
   Object.fromEntries(VERBATIM_RULES.map((rule) => [rule, ['error', { ...sharedRules[rule][1], skipStringValues: true }]]));
