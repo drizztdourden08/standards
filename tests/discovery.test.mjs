@@ -70,7 +70,7 @@ describe('installing a module is enough', () => {
     const root = tempTree({ 'package.json': { name: '@acme/repo' }, ...PACKAGE });
     const lines = captured();
     expect(await runStructure({ rootDir: root })).toBe(1);
-    expect(lines).toContain('  packages/core/src/clock/tick.widget.ts: a module file is kebab-case.ts, <subject>.type.ts, <subject>.constants.ts or index.ts');
+    expect(lines).toContain('  packages/core/src/clock/tick.widget.ts: a module file is kebab-case.ts, <subject>.type.ts, <subject>.constants.ts, <subject>.usage.ts or index.ts');
   });
 
   it('feeds the banned words of the module to the prose gate', () => {

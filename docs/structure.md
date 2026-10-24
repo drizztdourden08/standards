@@ -65,8 +65,8 @@ settings/features/                    a module folder: no .tsx of its own name
 | `UPPER_SNAKE` constants live in `*.constants.ts` | `local/constants-in-constants-file` |
 | A `useX` hook lives alone in `useX.ts` | `local/hook-file-named-after-hook` |
 | A component imports only `./<Name>.css`; theme and token sheets are imported by the entry | `local/css-beside-component` |
-| A component folder holds `Name.tsx`, `index.ts` and, optionally, `Name.css`, `Name.type.ts`, `Name.constants.ts`, `Name.usage.ts`, `behavior/`, `sub-components/`, plus the files an extension adds; a flat component is `Name.tsx`; a module folder holds kebab-case `.ts` files, `useX.ts`, `<subject>.type.ts`, `<subject>.constants.ts`, `index.ts`, plus the forms an extension adds | `standards structure` |
-| In a Tessera app, every component folder of the `parts` folders in `tessera.config.json` holds `Name.usage.ts`, the note on when to use the component; Tessera's extension adds the check | `standards structure` |
+| A component folder holds `Name.tsx`, `index.ts` and, optionally, `Name.css`, `Name.type.ts`, `Name.constants.ts`, `Name.usage.ts`, `behavior/`, `sub-components/`, plus the files an extension adds; a flat component is `Name.tsx`; a module folder holds kebab-case `.ts` files, `useX.ts`, `<subject>.type.ts`, `<subject>.constants.ts`, `<subject>.usage.ts`, `index.ts`, plus the forms an extension adds; a module `<subject>.usage.ts` must carry the folder's name and is never required | `standards structure` |
+| In a Tessera app, every component folder of the `parts` folders in `tessera.config.json` holds `Name.usage.ts`, the note on when to use the component; Tessera's extension adds the check, and it covers component folders only | `standards structure` |
 | Stories, tests and config files are exempt from the shape rules; a file that is a list by nature goes under `shapeOff: [{ files, why }]` | the ESLint factory |
 
 ## Where raw values live

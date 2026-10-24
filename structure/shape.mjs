@@ -1,7 +1,7 @@
 /* @layer tooling-scripts @kind logic */
 import { existsSync, readdirSync, statSync } from 'node:fs';
 import { basename, join, relative } from 'node:path';
-import { CORE_COMPONENT_FILES, COMPONENT_DIRS, CORE_MODULE_LABELS, CORE_MODULE_FILE, BEHAVIOR_FILE, SUB_COMPONENT_FILE, SHAPE_SKIP } from './structure.constants.mjs';
+import { CORE_COMPONENT_FILES, COMPONENT_DIRS, CORE_MODULE_LABELS, CORE_MODULE_FILE, MODULE_USAGE_FILE, BEHAVIOR_FILE, SUB_COMPONENT_FILE, SHAPE_SKIP } from './structure.constants.mjs';
 
 const entriesOf = (dir) => readdirSync(dir).filter((name) => !SHAPE_SKIP.has(name));
 const isDir = (path) => statSync(path).isDirectory();
@@ -48,11 +48,13 @@ const checkComponentFolder = (dir, label, rules, top) => {
 
 const moduleLabels = (rules) => [...CORE_MODULE_LABELS, ...rules.moduleFiles.map((entry) => entry.label).filter(Boolean)].join(', ');
 
-const isModuleFile = (name, rules) => CORE_MODULE_FILE.test(name) || rules.moduleFiles.some((entry) => entry.pattern.test(name));
+const isModuleUsage = (name, dir) => MODULE_USAGE_FILE.exec(name)?.[1] === basename(dir);
+
+const isModuleFile = (name, rules, dir) => CORE_MODULE_FILE.test(name) || isModuleUsage(name, dir) || rules.moduleFiles.some((entry) => entry.pattern.test(name));
 
 const checkModuleFolder = (dir, label, rules) =>
   entriesOf(dir)
-    .filter((name) => !isDir(join(dir, name)) && !isModuleFile(name, rules))
+    .filter((name) => !isDir(join(dir, name)) && !isModuleFile(name, rules, dir))
     .map((name) => `${label}/${name}: a module file is ${moduleLabels(rules)} or index.ts`);
 
 const walk = (rootDir, dir, findings, options) => {
