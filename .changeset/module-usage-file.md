@@ -1,5 +1,0 @@
----
-'@drizztdourden08/standards': minor
----
-
-A module folder may hold `<subject>.usage.ts`, the note on when to use the module, where the subject is the folder name, as a component folder holds `Name.usage.ts`. A usage file named after another subject is still rejected, and the shape error now lists the form. The usage file stays optional in a module folder: the Tessera rule that requires `Name.usage.ts` covers component folders only. The form is in `docs/structure.md`.
