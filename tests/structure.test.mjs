@@ -55,8 +55,25 @@ describe('module folders', () => {
     const root = tempTree(files(['src/index.ts', 'src/boot/theme.task.ts', 'src/boot/Stray File.txt']));
     const rules = structureRules([{ id: 'boot', structure: { moduleFiles: [{ pattern: /^[a-z][a-z0-9-]*\.task\.ts$/, label: '<id>.task.ts' }] } }]);
     expect(checkShapes(root, join(root, 'src'), [], rules)).toEqual([
-      'src/boot/Stray File.txt: a module file is kebab-case.ts, <subject>.type.ts, <subject>.constants.ts, <id>.task.ts or index.ts',
+      'src/boot/Stray File.txt: a module file is kebab-case.ts, <subject>.type.ts, <subject>.constants.ts, <subject>.usage.ts, <id>.task.ts or index.ts',
     ]);
+  });
+
+  it('accepts <subject>.usage.ts in a module folder named after the subject', () => {
+    const root = tempTree(files(['src/index.ts', 'src/reorder/index.ts', 'src/reorder/reorder.ts', 'src/reorder/reorder.usage.ts']));
+    expect(checkShapes(root, join(root, 'src'))).toEqual([]);
+  });
+
+  it('rejects a module usage file whose subject is not the folder name', () => {
+    const root = tempTree(files(['src/index.ts', 'src/reorder/index.ts', 'src/reorder/other.usage.ts']));
+    expect(checkShapes(root, join(root, 'src'))).toEqual([
+      'src/reorder/other.usage.ts: a module file is kebab-case.ts, <subject>.type.ts, <subject>.constants.ts, <subject>.usage.ts or index.ts',
+    ]);
+  });
+
+  it('leaves the required component usage rule to component folders', () => {
+    const root = tempTree(files(['src/index.ts', 'src/reorder/index.ts', 'src/reorder/reorder.ts']));
+    expect(checkShapes(root, join(root, 'src'), [], usageRules)).toEqual([]);
   });
 
   it('takes a bare RegExp as a module file pattern', () => {
