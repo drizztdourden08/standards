@@ -1,7 +1,7 @@
 /* @layer tooling-scripts @kind test */
 import { afterEach, describe, expect, it } from 'vitest';
 import { defineExtension, defineStandards, loadStandards } from '../index.mjs';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { facetOptions, mergeOptions } from '../config/merge.mjs';
 import { tempTree, removeTempTrees } from './temp-tree.mjs';
 
@@ -29,11 +29,18 @@ describe('defineExtension', { tags: ['standard'] }, () => {
     expect(defineExtension({ id: 'y', knip: { entry: ['a.ts'] } }).knip.entry).toEqual(['a.ts']);
   });
 
+  it('takes a knip facet of preprocessors with absolute paths', () => {
+    const path = resolve('pre.mjs');
+    expect(defineExtension({ id: 'x', knip: { preprocessors: [path] } }).knip.preprocessors).toEqual([path]);
+  });
+
   it('refuses a knip facet of the wrong shape', () => {
     expect(() => defineExtension({ id: 'x', knip: [] })).toThrow(/knip must be an object/);
     expect(() => defineExtension({ id: 'x', knip: { ignore: [] } })).toThrow(/unknown knip key ignore/);
     expect(() => defineExtension({ id: 'x', knip: { compilers: { ts: true } } })).toThrow(/knip\.compilers\.ts must be a function/);
     expect(() => defineExtension({ id: 'x', knip: { entry: 'a.ts' } })).toThrow(/knip\.entry must be a string array or a function/);
+    expect(() => defineExtension({ id: 'x', knip: { preprocessors: 'a.mjs' } })).toThrow(/knip\.preprocessors must be a string array/);
+    expect(() => defineExtension({ id: 'x', knip: { preprocessors: ['a.mjs'] } })).toThrow(/knip\.preprocessors entry a\.mjs must be an absolute path/);
   });
 
   it('refuses an unknown standards.config key', () => {

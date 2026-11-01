@@ -100,6 +100,8 @@ export interface KnipFacet {
   compilers?: Record<string, KnipCompiler>;
   /** joined into the knip.json entry list, and into each workspace that lists its own entry (packageDir is then that workspace) */
   entry?: string[] | ((ctx: OptionsContext) => string[]);
+  /** absolute paths of preprocessor modules; the knip command passes each as --preprocessor */
+  preprocessors?: string[];
 }
 
 export type PresetName = 'base' | 'library' | 'design-system' | 'react-app';

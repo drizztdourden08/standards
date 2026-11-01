@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { loadStandards, OWN_ROOT } from '../config/load.mjs';
 import { gitIgnoredGlobs } from '../config/git-ignored.mjs';
+import { knipPreprocessors } from '../config/knip-preprocessors.mjs';
 import { binOf } from './bin-of.mjs';
 
 const HINTS = join(import.meta.dirname, 'knip-hints.mjs');
@@ -79,7 +80,8 @@ const runKnip = ({ rootDir, args = [], label = 'standards knip' }) => {
   const config = knipConfigFor(rootDir);
   if (!config) warnUnusedFacets(rootDir, label);
   const configArgs = config ? ['--no-gitignore', '--config', writeConfig(rootDir, config), '--preprocessor', HINTS] : [];
-  return spawnSync(process.execPath, [bin, ...configArgs, ...args], { cwd: rootDir, stdio: 'inherit' }).status ?? 1;
+  const extensionArgs = knipPreprocessors(loadStandards({ rootDir })).flatMap((path) => ['--preprocessor', path]);
+  return spawnSync(process.execPath, [bin, ...configArgs, ...extensionArgs, ...args], { cwd: rootDir, stdio: 'inherit' }).status ?? 1;
 };
 
 export { runKnip, knipConfigFor, writeConfig };

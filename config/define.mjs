@@ -1,8 +1,9 @@
 /* @layer tooling-scripts @kind logic */
+import { isAbsolute } from 'node:path';
 const FACETS = ['structure', 'eslint', 'stylelint', 'markdownlint', 'prose', 'knip', 'releaseNotes'];
 const META = ['id', 'description'];
 const CONFIG_KEYS = ['presets', 'extensions', 'options', 'discover'];
-const KNIP_KEYS = ['compilers', 'entry'];
+const KNIP_KEYS = ['compilers', 'entry', 'preprocessors'];
 const RELEASE_NOTES_KEYS = ['sections', 'product'];
 
 const isRecord = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -16,6 +17,12 @@ const compilerProblems = (compilers) => {
 
 const entryProblems = (entry) => (entry === undefined || typeof entry === 'function' || isStringList(entry) ? [] : ['knip.entry must be a string array or a function (ctx) => string[]']);
 
+const preprocessorProblems = (preprocessors) => {
+  if (preprocessors === undefined) return [];
+  if (!isStringList(preprocessors)) return ['knip.preprocessors must be a string array of absolute paths'];
+  return preprocessors.filter((path) => !isAbsolute(path)).map((path) => `knip.preprocessors entry ${path} must be an absolute path`);
+};
+
 const knipProblems = (knip) => {
   if (knip === undefined) return [];
   if (!isRecord(knip)) return ['knip must be an object'];
@@ -24,6 +31,7 @@ const knipProblems = (knip) => {
     ...(unknown.length ? [`unknown knip key ${unknown.join(', ')}; the keys are ${KNIP_KEYS.join(', ')}`] : []),
     ...compilerProblems(knip.compilers),
     ...entryProblems(knip.entry),
+    ...preprocessorProblems(knip.preprocessors),
   ];
 };
 

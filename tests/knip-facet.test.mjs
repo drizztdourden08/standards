@@ -5,6 +5,7 @@ import { pathToFileURL } from 'node:url';
 import { afterEach, describe, expect, it } from 'vitest';
 import { writeConfig } from '../cli/knip.mjs';
 import { withKnipFacets } from '../config/knip-facet.mjs';
+import { knipPreprocessors } from '../config/knip-preprocessors.mjs';
 import { tempTree, removeTempTrees } from './temp-tree.mjs';
 
 afterEach(removeTempTrees);
@@ -20,6 +21,14 @@ const EXTENSION_MODULE = [
 ].join('\n');
 
 const loaded = (extensions, rootDir = '/repo') => ({ rootDir, context: { rootDir }, extensions });
+
+describe('knipPreprocessors', { tags: ['critical'] }, () => {
+  it('collects the preprocessors of every extension once each, in load order', () => {
+    const extensions = [{ id: 'a', knip: { preprocessors: ['/p/one.mjs', '/p/two.mjs'] } }, { id: 'b', prose: {} }, { id: 'c', knip: { preprocessors: ['/p/two.mjs', '/p/three.mjs'] } }];
+    expect(knipPreprocessors(loaded(extensions))).toEqual(['/p/one.mjs', '/p/two.mjs', '/p/three.mjs']);
+    expect(knipPreprocessors(loaded([{ id: 'x', knip: { entry: ['a.ts'] } }]))).toEqual([]);
+  });
+});
 
 describe('withKnipFacets', { tags: ['standard'] }, () => {
   it('leaves the config as it is when no extension has a knip facet', () => {

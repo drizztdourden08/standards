@@ -47,7 +47,7 @@ standards run-locked -- <cmd>  a command under the machine-wide heavy check lock
 standards structure [--check]  package names, barrels, folder names, depth, component and module folder shapes
 standards prose                the writing gate over every tracked text file the other linters skip
 standards knip [args]          knip with the git-ignored paths under ignore, in place of its own .gitignore reading,
-                               plus the compilers and entries of the extensions' knip facets
+                               plus the compilers, entries and preprocessors of the extensions' knip facets
 standards sync --check         .npmrc, .gitignore, the changeset config, .jscpd.json and knip.json against the templates,
                                and a failure when two copies of @drizztdourden08/standards resolve in one install
                                (copies the install reaches; folders pnpm left in .pnpm after an upgrade do not count),
@@ -179,6 +179,7 @@ export default defineExtension({
 | `prose` | `banned`, `allow` | words the writing gate reports or skips, in ESLint, markdownlint and `standards prose` alike; an `allow` entry that equals a declared name, case included, also passes that name through `local/no-slop-identifiers` ([docs/structure.md](docs/structure.md#exceptions-are-written-down-never-silent)) |
 | `knip` | `compilers` | `{ [ext]: (text, path) => string }`, what knip reads in place of each file of that extension (see below) |
 | | `entry` | entry patterns, or a function `(ctx) => string[]` |
+| | `preprocessors` | absolute paths of preprocessor modules (`['/abs/path/to/preprocess.mjs']`); `standards knip` passes each one of every loaded extension as `--preprocessor <path>`, after its own hints, once per path. Use it to mark the externals of a runtime as used |
 | `releaseNotes` | `sections` | `##` sections a release note may use beside the base ones ([docs/release-notes.md](docs/release-notes.md)) |
 | | `product` | the product a note title names, when the repo's `options.releaseNotes.product` does not set it |
 
