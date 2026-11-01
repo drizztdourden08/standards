@@ -14,11 +14,12 @@ const BASE_TEST = {
 
 /**
  * @param {Record<string, any>} [overrides] a vitest config
+ * @param {NodeJS.ProcessEnv} [env] loses the NODE_PATH of pnpm bin shims
  * @returns {Record<string, any>}
  */
-const defineStandardsVitest = (overrides = {}) => ({
-  ...overrides,
-  test: { ...BASE_TEST, ...overrides.test },
-});
+const defineStandardsVitest = (overrides = {}, env = process.env) => {
+  delete env.NODE_PATH;
+  return { ...overrides, test: { ...BASE_TEST, ...overrides.test } };
+};
 
 export { defineStandardsVitest };
