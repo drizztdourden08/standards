@@ -7,7 +7,7 @@ import { changedFiles } from './changed-files.mjs';
 import { runTimed } from './run-timed.mjs';
 import { BASE_ENV, TEST_TIMEOUTS_MS } from './run.constants.mjs';
 import { parseTestArgs } from './test-args.mjs';
-import { testArgs } from './test-modes.mjs';
+import { testArgs, testBatches } from './test-modes.mjs';
 
 const runVitest = async (job, env) => {
   const { rootDir, mode, base, passthrough, timeoutMs } = job;
@@ -23,8 +23,16 @@ const runVitest = async (job, env) => {
     console.error('standards test: vitest is not installed');
     return 1;
   }
-  const args = [bin, ...testArgs({ mode, files: found.files, passthrough })];
-  return (await runTimed({ command: process.execPath, args, cwd: rootDir, env, timeoutMs, label: `test ${mode}` })).code;
+  const batches = testBatches(found.files);
+  let code = 0;
+  for (const [index, files] of batches.entries()) {
+    const label = batches.length > 1 ? `test ${mode} batch ${index + 1} of ${batches.length}` : `test ${mode}`;
+    if (batches.length > 1) console.log(`standards ${label}`);
+    const args = [bin, ...testArgs({ mode, files, passthrough })];
+    const result = await runTimed({ command: process.execPath, args, cwd: rootDir, env, timeoutMs, label });
+    code ||= result.code;
+  }
+  return code;
 };
 
 /**

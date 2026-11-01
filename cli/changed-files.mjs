@@ -13,10 +13,16 @@ const lines = (text) => (text ? text.split(/\r?\n/).filter(Boolean) : []);
 
 const knownRef = (cwd, ref) => Boolean(ref) && git(cwd, ['rev-parse', '--verify', '--quiet', ref]) !== null;
 
+const localHead = (cwd, remoteHead) => {
+  const name = remoteHead?.replace(/^[^/]+\//, '');
+  if (!name || name === remoteHead || !knownRef(cwd, `refs/heads/${name}`)) return undefined;
+  return git(cwd, ['merge-base', '--is-ancestor', remoteHead, `refs/heads/${name}`]) === null ? undefined : name;
+};
+
 const baseRef = (cwd, env) => {
   if (env[BASE_ENV]) return knownRef(cwd, env[BASE_ENV]) ? env[BASE_ENV] : undefined;
   const remoteHead = git(cwd, ['symbolic-ref', '--short', 'refs/remotes/origin/HEAD']);
-  return [remoteHead, ...BASE_REFS].find((ref) => knownRef(cwd, ref));
+  return [localHead(cwd, remoteHead), remoteHead, ...BASE_REFS].find((ref) => knownRef(cwd, ref));
 };
 
 /**

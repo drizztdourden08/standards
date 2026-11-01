@@ -1,5 +1,6 @@
 /* @layer tooling-scripts @kind logic */
-import { TEST_MODES } from './run.constants.mjs';
+import { batchesOf } from './lint-batches.mjs';
+import { TEST_BATCH_CHARS, TEST_MODES } from './run.constants.mjs';
 
 const TAG_FILTERS = { changed: 'critical', pr: 'critical||standard', e2e: 'e2e' };
 
@@ -12,4 +13,11 @@ const testArgs = ({ mode = 'changed', files, passthrough = [] }) => {
   return ['related', ...files, '--run', '--tags-filter', TAG_FILTERS[mode], '--passWithNoTests', ...passthrough];
 };
 
-export { testArgs };
+/**
+ * @param {string[]} files
+ * @param {number} [maxChars]
+ * @returns {string[][]} the files in order, in batches that keep one vitest command line short enough for Windows
+ */
+const testBatches = (files, maxChars = TEST_BATCH_CHARS) => batchesOf(files, { maxFiles: Infinity, maxChars });
+
+export { testArgs, testBatches };
