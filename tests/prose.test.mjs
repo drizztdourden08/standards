@@ -1,8 +1,11 @@
 /* @layer tooling-scripts @kind test */
+import { execFileSync } from 'node:child_process';
+import { rmSync } from 'node:fs';
+import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { runProse, readProseIgnore } from '../prose/index.mjs';
 import { findSlop } from '../writing/index.mjs';
-import { tempTree, removeTempTrees } from './temp-tree.mjs';
+import { gitTree, tempTree, removeTempTrees } from './temp-tree.mjs';
 
 const captured = () => {
   const lines = [];
@@ -42,6 +45,15 @@ describe('runProse', { tags: ['standard'] }, () => {
     const root = tempTree({ 'notes.txt': 'A robust tool.\n', 'standards.config.mjs': 'export default { options: { allow: ["robust"] } };\n' });
     captured();
     expect(runProse({ rootDir: root })).toBe(0);
+  });
+
+  it('skips a tracked file that is deleted but not committed', () => {
+    const root = gitTree({ 'gone.txt': 'plain\n', 'notes.txt': 'plain\n' });
+    execFileSync('git', ['add', '-A'], { cwd: root });
+    rmSync(join(root, 'gone.txt'));
+    const lines = captured();
+    expect(runProse({ rootDir: root })).toBe(0);
+    expect(lines.at(-1)).toMatch(/1 file\(s\) outside/);
   });
 });
 

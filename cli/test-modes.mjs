@@ -16,7 +16,7 @@ const testArgs = ({ mode = 'changed', files, passthrough = [] }) => {
 /**
  * @param {string[]} files
  * @param {number} [maxChars]
- * @returns {string[][]} the files in order, in batches that keep one vitest command line short enough for Windows
+ * @returns {string[][]} batches short enough for one command line
  */
 const testBatches = (files, maxChars = TEST_BATCH_CHARS) => batchesOf(files, { maxFiles: Infinity, maxChars });
 

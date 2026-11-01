@@ -10,7 +10,12 @@ afterEach(removeTempTrees);
 describe('knipConfigFor', { tags: ['standard'] }, () => {
   it('adds every git-ignored path but node_modules, which knip skips itself, to the ignore list of knip.json', () => {
     const root = gitTree({ 'knip.json': { entry: ['a.mjs'], ignore: 'vendor/**' }, '.gitignore': '.*/\ngen/\nnode_modules/\n', 'gen/a.mjs': 'x', '.cache/b.mjs': 'x', 'node_modules/x/a.js': 'x' });
-    expect(knipConfigFor(root)).toEqual({ entry: ['a.mjs'], ignore: ['vendor/**', '.cache/**', 'gen/**'] });
+    expect(knipConfigFor(root)).toMatchObject({ entry: ['a.mjs'], ignore: ['vendor/**', '.cache/**', 'gen/**'] });
+  });
+
+  it('counts vitest.e2e.config.* as a vitest config unless knip.json sets vitest', () => {
+    expect(knipConfigFor(gitTree({ 'knip.json': {} })).vitest.config).toContain('vitest.*.config.{js,mjs,ts,cjs,mts,cts}');
+    expect(knipConfigFor(gitTree({ 'knip.json': { vitest: false } })).vitest).toBe(false);
   });
 
   it('leaves a repo without a knip JSON config to knip', () => {

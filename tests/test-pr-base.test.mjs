@@ -46,9 +46,9 @@ describe('K5 standards test pr base in local-first mode', { tags: ['critical'] }
 
   it('falls back to origin/main when the local main has diverged from it', () => {
     const root = localFirstRepo();
-    run(root, 'checkout', '-q', 'main');
-    run(root, 'reset', '-q', '--hard', 'HEAD~2');
+    run(root, 'checkout', '-q', '--detach', 'main~2');
     commitFile(root, 'diverged.txt');
+    run(root, 'update-ref', 'refs/remotes/origin/main', 'HEAD');
     run(root, 'checkout', '-q', 'feature');
     expect(changedFiles(root, {}).ref).toBe('origin/main');
   });
