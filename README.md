@@ -78,6 +78,10 @@ When the repo has a `knip.json` (or `.knip.json`), `standards knip` writes `node
 
 Each lint step has a hard timeout: typecheck 5 min, eslint 10, stylelint 3, prose 2, knip 5, jscpd 5. Override them with `options: { lint: { timeouts: { eslint: 900000 } } }` in `standards.config.mjs`. On timeout the run prints which step timed out, kills the process tree that step started by its own pid (`taskkill /PID <pid> /T /F` on Windows, the process group on POSIX; never by image name), carries on with the other steps and exits non-zero. A test run has one overall timeout per mode: changed 10 min, pr 20, e2e 30, set with `options: { test: { timeouts: { pr: 1800000 } } }`.
 
+### Batches and memory
+
+The code lint never runs a big repo in one process. `--all` lists the tracked and untracked, not ignored, code files with `git ls-files` (a repo without git lints `.` as before). Both modes then lint in batches of at most 1000 files, and a batch also ends before its command line passes 24000 characters, which keeps Windows below its limit. One batch runs at a time and the run prints `eslint batch i of n`. The step fails if any batch fails. The eslint timeout applies to each batch, and a timeout kills that batch's process tree and stops the step. Each batch runs with `NODE_OPTIONS=--max-old-space-size=4096`; `STANDARDS_LINT_HEAP_MB=8192` sets another ceiling in MB. A small change is one batch, one process.
+
 ### One heavy check at a time
 
 Lint, test and `standards run-locked` take one lock for the whole machine, so two projects never build, lint and test at once. The lock is the file `~/.coord/locks/heavy-check.lock`, holding the pid, project root, command and start time of the holder (`STANDARDS_LOCK_DIR` names another folder). A run that finds a live holder waits, prints one line when it starts to wait and one when it gets the lock, and never fails for waiting. A lock whose pid is dead is stale and is taken over. The lock is released when the run ends, on SIGINT, SIGTERM and SIGHUP, and on timeout. A run started inside a locked run sees `STANDARDS_LOCK_HOLDER=<pid>` in its environment and does not wait on itself.

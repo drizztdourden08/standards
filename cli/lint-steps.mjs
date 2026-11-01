@@ -4,6 +4,8 @@ import { join } from 'node:path';
 import { OWN_ROOT } from '../config/load.mjs';
 import { gitIgnoredGlobs } from '../config/git-ignored.mjs';
 import { binOf } from './bin-of.mjs';
+import { lintableFiles } from './lint-files.mjs';
+import { batchesOf } from './lint-batches.mjs';
 import { ESLINT_FILES, JSCPD_FILES } from './run.constants.mjs';
 
 const STANDARDS_BIN = join(OWN_ROOT, 'bin', 'standards.mjs');
@@ -33,8 +35,13 @@ const jscpdArgs = (rootDir, targets) => {
 const tool = (id, name, from, args) => ({ id, name, from, args });
 const standards = (id, args) => ({ id, bin: STANDARDS_BIN, args });
 
-const targetsOf = (plan, styleGlobs) => {
-  if (plan.mode !== 'changed') return { eslint: ['.'], stylelint: styleGlobs, jscpd: ['.'] };
+const eslintStep = (theirs, files) => {
+  const batches = files ? batchesOf(files).map((batch) => [...batch, '--no-warn-ignored']) : [['.']];
+  return batches.length && { ...tool('eslint', 'eslint', theirs, batches[0]), batches, heap: true };
+};
+
+const targetsOf = (plan, styleGlobs, rootDir) => {
+  if (plan.mode !== 'changed') return { eslint: lintableFiles(rootDir), stylelint: styleGlobs, jscpd: ['.'] };
   const only = (pattern) => plan.files.filter((file) => pattern.test(file));
   return { eslint: only(ESLINT_FILES), stylelint: only(stylelintPattern(styleGlobs)), jscpd: only(JSCPD_FILES) };
 };
@@ -46,10 +53,10 @@ const targetsOf = (plan, styleGlobs) => {
 const lintSteps = ({ rootDir, lint, plan }) => {
   const theirs = [rootDir, OWN_ROOT];
   const changed = plan.mode === 'changed';
-  const targets = targetsOf(plan, lint.stylelint ?? ['**/*.css']);
+  const targets = targetsOf(plan, lint.stylelint ?? ['**/*.css'], rootDir);
   const steps = [
     existsSync(join(rootDir, 'tsconfig.json')) && tool('typecheck', 'typescript', theirs, ['--noEmit']),
-    targets.eslint.length && tool('eslint', 'eslint', theirs, changed ? [...targets.eslint, '--no-warn-ignored'] : targets.eslint),
+    eslintStep(theirs, targets.eslint),
     targets.stylelint.length && tool('stylelint', 'stylelint', theirs, stylelintArgs(rootDir, targets.stylelint)),
     standards('prose', ['prose', '--root', rootDir]),
     !changed && standards('knip', ['knip']),
