@@ -6,7 +6,7 @@ import { ESLINT_FILES } from './run.constants.mjs';
 
 /**
  * @param {string} rootDir
- * @returns {string[] | null} the tracked and untracked, not ignored, ESLint files; null when git cannot list them
+ * @returns {string[] | null} the code files git lists, null without git
  */
 const lintableFiles = (rootDir) => {
   const result = spawnSync('git', ['ls-files', '--cached', '--others', '--exclude-standard', '-z'], { cwd: rootDir, encoding: 'utf8', maxBuffer: 256 * 1024 * 1024, windowsHide: true });

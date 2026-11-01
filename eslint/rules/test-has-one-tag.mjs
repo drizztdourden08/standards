@@ -34,6 +34,10 @@ const isAnnotation = (call) => {
   return first.type === 'ArrowFunctionExpression' || first.type === 'FunctionExpression' || (first.type === 'Literal' && typeof first.value === 'boolean');
 };
 
+const isSuiteRoot = (root) => SUITE_ROOTS.has(root.name) || (root.group && root.name === 'test');
+
+const isTestCall = (root, call) => TEST_ROOTS.has(root.name) && call.arguments.length >= 2 && !isAnnotation(call);
+
 const tagsOf = (call) => {
   const found = [];
   for (const arg of call.arguments) {
@@ -72,16 +76,18 @@ const testHasOneTag = {
       CallExpression(node) {
         const root = rootOf(node.callee);
         if (!root || root.todo) return;
-        const suite = SUITE_ROOTS.has(root.name) || (root.group && root.name === 'test');
-        if (suite) suites.push(own(node));
-        if (suite || !TEST_ROOTS.has(root.name) || node.arguments.length < 2 || isAnnotation(node)) return;
+        if (isSuiteRoot(root)) {
+          suites.push(own(node));
+          return;
+        }
+        if (!isTestCall(root, node)) return;
         const names = [...new Set([...suites.flat(), ...own(node)])];
         if (names.length === 0) context.report({ node, message: `A test carries exactly one tag (${listed}), on itself or on its describe. Add { tags: ['${known[0]}'] } (Playwright: { tag: '@${known[0]}' }) as the second argument.` });
         if (names.length > 1) context.report({ node, message: `A test carries exactly one tag, this one has ${names.length} (${names.join(', ')}). Keep one.` });
       },
       'CallExpression:exit'(node) {
         const root = rootOf(node.callee);
-        if (root && !root.todo && (SUITE_ROOTS.has(root.name) || (root.group && root.name === 'test'))) suites.pop();
+        if (root && !root.todo && isSuiteRoot(root)) suites.pop();
       },
     };
   },

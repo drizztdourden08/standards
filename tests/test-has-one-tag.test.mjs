@@ -11,6 +11,8 @@ const tagMessages = async (body, options, file = 'a.test.mjs') => {
   return messages.filter((message) => message.startsWith('local/test-has-one-tag'));
 };
 
+const src = (...lines) => lines.join('\n');
+
 describe('local/test-has-one-tag (K1 business logic)', { tags: ['critical'] }, () => {
   it('passes a tag on the test, an array tag, and a tag on the describe', async () => {
     const body = [
@@ -57,25 +59,16 @@ describe('local/test-has-one-tag (K1 business logic)', { tags: ['critical'] }, (
       "describe.serial('c', { tag: ['@e2e'] }, () => {",
       "  it('d', () => {});",
       '});',
-    ].join('
-');
+    ].join('\n');
     expect(await tagMessages(body)).toEqual([]);
-    const group = "describe('c', { tag: '@e2e' }, () => {
-  it('d', () => {});
-});";
+    const group = src("describe('c', { tag: '@e2e' }, () => {", "  it('d', () => {});", '});');
     expect(await tagMessages(group)).toEqual([]);
-    const playwright = "test.describe('c', { tag: '@e2e' }, () => {
-  test('d', async () => {});
-  test.step('e', async () => {});
-});
-test('f', async () => {});";
-    expect(await tagMessages(playwright)).toHaveLength(1);
+    const browser = src("test.describe('c', { tag: '@e2e' }, () => {", "  test('d', async () => {});", "  test.step('e', async () => {});", '});', "test('f', async () => {});");
+    expect(await tagMessages(browser)).toHaveLength(1);
   });
 
   it('reports a Playwright tag without the at sign, an unknown one, and two tags', async () => {
-    const messages = await tagMessages("it('a', { tag: 'critical' }, () => {});
-it('b', { tag: '@fast' }, () => {});
-it('c', { tag: ['@critical', '@e2e'] }, () => {});");
+    const messages = await tagMessages(src("it('a', { tag: 'critical' }, () => {});", "it('b', { tag: '@fast' }, () => {});", "it('c', { tag: ['@critical', '@e2e'] }, () => {});"));
     expect(messages).toContain('local/test-has-one-tag: Unknown tag "critical". The tags are @critical, @standard, @e2e.');
     expect(messages).toContain('local/test-has-one-tag: Unknown tag "@fast". The tags are @critical, @standard, @e2e.');
     expect(messages.some((message) => message.includes('2 (@critical, @e2e)'))).toBe(true);
@@ -88,8 +81,7 @@ it('c', { tag: ['@critical', '@e2e'] }, () => {});");
   });
 
   it('ignores a skip annotation call inside a Playwright test', async () => {
-    expect(await tagMessages("it.skip(true, 'not on this browser');
-it.skip(() => true, 'later');")).toEqual([]);
+    expect(await tagMessages(src("it.skip(true, 'not on this browser');", "it.skip(() => true, 'later');"))).toEqual([]);
   });
 
   it('applies to e2e specs and to files in the tests and e2e folders', async () => {

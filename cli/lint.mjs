@@ -5,8 +5,7 @@ import { loadStandards } from '../config/load.mjs';
 import { withHeavyLock } from '../lock/with-lock.mjs';
 import { lintSteps, stepBin } from './lint-steps.mjs';
 import { planLint } from './lint-plan.mjs';
-import { runTimed } from './run-timed.mjs';
-import { withHeapCeiling } from './heap-env.mjs';
+import { runBatches } from './run-batches.mjs';
 import { BASE_ENV, LINT_TIMEOUTS_MS } from './run.constants.mjs';
 
 const OPTIONS = { root: { type: 'string' }, all: { type: 'boolean' }, changed: { type: 'boolean' }, base: { type: 'string' } };
@@ -18,18 +17,8 @@ const runStep = async (rootDir, step, lint, env) => {
     return { id: step.id, failed: true, timedOut: false };
   }
   const timeoutMs = lint.timeouts?.[step.id] ?? LINT_TIMEOUTS_MS[step.id];
-  const batches = step.batches ?? [step.args];
-  const stepEnv = step.heap ? withHeapCeiling(env) : env;
-  const result = { id: step.id, failed: false, timedOut: false };
-  for (const [index, args] of batches.entries()) {
-    const label = step.batches ? `lint step ${step.id} batch ${index + 1} of ${batches.length}` : `lint step ${step.id}`;
-    if (step.batches) console.log(`standards lint: ${step.id} batch ${index + 1} of ${batches.length}`);
-    const { code, timedOut } = await runTimed({ command: process.execPath, args: [bin, ...args], cwd: rootDir, env: stepEnv, timeoutMs, label });
-    result.failed ||= code !== 0;
-    result.timedOut ||= timedOut;
-    if (timedOut) break;
-  }
-  return result;
+  const { failed, timedOut } = await runBatches({ bin, rootDir, step, env, timeoutMs });
+  return { id: step.id, failed, timedOut };
 };
 
 const runSteps = async (rootDir, lint, env, options) => {
