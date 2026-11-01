@@ -80,7 +80,9 @@
     "lint": "eslint . && node bin/standards.mjs prose && node bin/standards.mjs sync --check && node bin/standards.mjs knip && jscpd .",
     "changeset": "changeset",
     "lint:md": "markdownlint-cli2",
-    "test": "vitest run",
+    "test": "node bin/standards.mjs test",
+    "test:pr": "node bin/standards.mjs test pr",
+    "test:e2e": "node bin/standards.mjs test e2e",
     "sync": "node bin/standards.mjs sync --check"
   },
   "peerDependencies": {

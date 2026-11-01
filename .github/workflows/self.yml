@@ -14,7 +14,7 @@ jobs:
       contents: read
       packages: read
     with:
-      scripts: lint lint:md test
+      scripts: lint lint:md test:pr
       sync-check: false
       release-notes: node bin/standards.mjs release-notes
 

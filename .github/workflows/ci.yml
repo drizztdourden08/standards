@@ -14,7 +14,7 @@ on:
       scripts:
         description: package scripts the gate runs in order, separated by spaces
         type: string
-        default: lint lint:md structure test
+        default: lint lint:md structure test:pr
       sync-check:
         description: also run standards sync --check (the repo has @drizztdourden08/standards as a direct dependency)
         type: boolean
@@ -35,6 +35,8 @@ jobs:
         shell: bash
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
