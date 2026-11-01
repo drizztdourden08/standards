@@ -1,5 +1,12 @@
 # @drizztdourden08/standards
 
+## 0.14.2
+
+### Patch Changes
+
+- 00b2869: `standards knip` passes knip a single `--preprocessor`. knip 5.88 crashes with `id.startsWith is not a function` on a second one, and the git-ignored hints plus any extension preprocessor made two. When there is more than one, standards writes a chain module under `node_modules/.cache/standards` that runs them all in order.
+- 00b2869: The heavy check lock gives up after 300 s with an error that names the holder. `STANDARDS_LOCK_WAIT_S` sets another limit. The wait line now says how long the holder has held the lock, and it repeats each minute.
+
 ## 0.14.1
 
 ### Patch Changes
