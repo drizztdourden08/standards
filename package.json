@@ -42,8 +42,14 @@
     "./presets/*": "./presets/*.mjs",
     "./tsconfig/*": "./tsconfig/*",
     "./knip": "./cli/knip.mjs",
-    "./lock": "./lock/index.mjs",
-    "./vitest": "./vitest/index.mjs",
+    "./lock": {
+      "types": "./types/lock.d.mts",
+      "default": "./lock/index.mjs"
+    },
+    "./vitest": {
+      "types": "./types/vitest.d.mts",
+      "default": "./vitest/index.mjs"
+    },
     "./knip/*": "./knip/*",
     "./release-notes": "./release-notes/index.mjs",
     "./jscpd/*": "./jscpd/*",
