@@ -36,4 +36,4 @@ const preprocessorArgs = (dir, paths) => {
   return ['--preprocessor', file];
 };
 
-export { chainSource, preprocessorArgs };
+export { preprocessorArgs };
