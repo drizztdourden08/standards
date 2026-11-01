@@ -10,7 +10,7 @@ const branchRoot = (node, rootOf) => {
   return yes && no && yes.name === no.name ? { name: yes.name, todo: yes.todo && no.todo, group: yes.group || no.group } : null;
 };
 
-const rootOf = (callee) => {
+const unwrap = (callee) => {
   let node = callee;
   let todo = false;
   let group = false;
@@ -22,6 +22,11 @@ const rootOf = (callee) => {
       node = node.object;
     } else break;
   }
+  return { node, todo, group };
+};
+
+const rootOf = (callee) => {
+  const { node, todo, group } = unwrap(callee);
   if (node.type === 'ConditionalExpression') return branchRoot(node, rootOf);
   return node.type === 'Identifier' ? { name: node.name, todo, group } : null;
 };
