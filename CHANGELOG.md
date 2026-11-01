@@ -1,5 +1,11 @@
 # @drizztdourden08/standards
 
+## 0.14.4
+
+### Patch Changes
+
+- d708b93: `defineStandardsVitest` drops the `NODE_PATH` that pnpm's bin shims export, so a test that builds a folder without a package no longer finds the repo's own copy through `.pnpm/node_modules`.
+
 ## 0.14.3
 
 ### Patch Changes
