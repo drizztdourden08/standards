@@ -28,7 +28,6 @@ const runVitest = async (job, env) => {
 };
 
 /**
- * `standards test [changed | pr | e2e] [--base <ref>]`: only the tests related to files touched against the base, under the heavy check lock.
  * @param {{ rootDir: string, args?: string[] }} ctx
  * @returns {Promise<number>} exit code
  */

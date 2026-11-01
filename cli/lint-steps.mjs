@@ -33,32 +33,34 @@ const jscpdArgs = (rootDir, targets) => {
 const tool = (id, name, from, args) => ({ id, name, from, args });
 const standards = (id, args) => ({ id, bin: STANDARDS_BIN, args });
 
+const targetsOf = (plan, styleGlobs) => {
+  if (plan.mode !== 'changed') return { eslint: ['.'], stylelint: styleGlobs, jscpd: ['.'] };
+  const only = (pattern) => plan.files.filter((file) => pattern.test(file));
+  return { eslint: only(ESLINT_FILES), stylelint: only(stylelintPattern(styleGlobs)), jscpd: only(JSCPD_FILES) };
+};
+
 /**
  * @param {{ rootDir: string, lint: Record<string, any>, plan: { mode: 'all' | 'changed', files: string[] | null } }} ctx
- * @returns {{ id: string, name?: string, from?: string[], bin?: string, args: string[] }[]} the steps to run, each a child process
+ * @returns {{ id: string, name?: string, from?: string[], bin?: string, args: string[] }[]}
  */
 const lintSteps = ({ rootDir, lint, plan }) => {
   const theirs = [rootDir, OWN_ROOT];
   const changed = plan.mode === 'changed';
-  const styleGlobs = lint.stylelint ?? ['**/*.css'];
-  const only = (pattern) => plan.files.filter((file) => pattern.test(file));
-  const eslintTargets = changed ? only(ESLINT_FILES) : ['.'];
-  const styleTargets = changed ? only(stylelintPattern(styleGlobs)) : styleGlobs;
-  const jscpdTargets = changed ? only(JSCPD_FILES) : ['.'];
+  const targets = targetsOf(plan, lint.stylelint ?? ['**/*.css']);
   const steps = [
     existsSync(join(rootDir, 'tsconfig.json')) && tool('typecheck', 'typescript', theirs, ['--noEmit']),
-    eslintTargets.length && tool('eslint', 'eslint', theirs, [...eslintTargets, ...(changed ? ['--no-warn-ignored'] : [])]),
-    styleTargets.length && tool('stylelint', 'stylelint', theirs, stylelintArgs(rootDir, styleTargets)),
+    targets.eslint.length && tool('eslint', 'eslint', theirs, changed ? [...targets.eslint, '--no-warn-ignored'] : targets.eslint),
+    targets.stylelint.length && tool('stylelint', 'stylelint', theirs, stylelintArgs(rootDir, targets.stylelint)),
     standards('prose', ['prose', '--root', rootDir]),
     !changed && standards('knip', ['knip']),
-    jscpdTargets.length && tool('jscpd', 'jscpd', theirs, jscpdArgs(rootDir, jscpdTargets)),
+    targets.jscpd.length && tool('jscpd', 'jscpd', theirs, jscpdArgs(rootDir, targets.jscpd)),
   ];
   return steps.filter(Boolean).filter((step) => !(lint.skip ?? []).includes(step.id));
 };
 
 /**
  * @param {{ id: string, name?: string, from?: string[], bin?: string }} step
- * @returns {string | null} the script node runs for the step, or null when the tool is not installed
+ * @returns {string | null}
  */
 const stepBin = (step) => step.bin ?? binOf(step.name, step.from);
 

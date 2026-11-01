@@ -5,7 +5,6 @@ import { killTree } from './kill-tree.mjs';
 const TIMED_OUT_CODE = 124;
 
 /**
- * Runs one command with inherited output and a hard timeout. On timeout the whole process tree it started is killed.
  * @param {{ command: string, args?: string[], cwd: string, env?: NodeJS.ProcessEnv, timeoutMs: number, label: string, shell?: boolean }} job
  * @returns {Promise<{ code: number, timedOut: boolean }>}
  */

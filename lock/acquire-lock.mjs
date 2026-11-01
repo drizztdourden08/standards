@@ -18,10 +18,18 @@ const dropStale = (file, seen) => {
   }
 };
 
+const attempt = (file, holder, alive) => {
+  if (createLock(file, holder)) return { taken: true };
+  const current = readLock(file);
+  if (current === null) return { retry: true };
+  if (!isStale(file, current, alive)) return { waitingOn: current };
+  dropStale(file, current);
+  return { retry: true };
+};
+
 /**
- * Takes the machine-wide heavy check lock. Waits for a live holder, takes over a lock whose pid is dead.
  * @param {{ root: string, command: string, env?: NodeJS.ProcessEnv, pollMs?: number, alive?: (pid: number) => boolean, log?: (line: string) => void }} job
- * @returns {Promise<() => void>} release
+ * @returns {Promise<() => void>}
  */
 const acquireLock = async ({ root, command, env = process.env, pollMs = POLL_MS, alive = isAlive, log = console.error }) => {
   const file = lockPath(env);
@@ -29,16 +37,11 @@ const acquireLock = async ({ root, command, env = process.env, pollMs = POLL_MS,
   const started = Date.now();
   let announced = false;
   for (;;) {
-    if (createLock(file, holder)) break;
-    const current = readLock(file);
-    if (current !== null && isStale(file, current, alive)) {
-      dropStale(file, current);
-      continue;
-    }
-    if (current !== null && !announced) {
-      log(`standards: waiting for the heavy check lock held by pid ${current.pid} (${current.command} in ${current.root})`);
-      announced = true;
-    }
+    const result = attempt(file, holder, alive);
+    if (result.taken) break;
+    if (result.retry) continue;
+    if (!announced) log(`standards: waiting for the heavy check lock held by pid ${result.waitingOn.pid} (${result.waitingOn.command} in ${result.waitingOn.root})`);
+    announced = true;
     await sleep(pollMs);
   }
   if (announced) log(`standards: heavy check lock acquired after ${Math.round((Date.now() - started) / 1000)}s`);

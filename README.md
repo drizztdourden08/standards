@@ -38,7 +38,12 @@ Each factory returns its config synchronously, so a config file default-exports 
 ## The command
 
 ```
-standards lint                 typecheck, eslint, stylelint, prose, knip and jscpd; every step runs, the failures are listed at the end
+standards lint [--all] [--base <ref>]
+                               typecheck, eslint, stylelint, prose, knip and jscpd; every step runs, the failures are
+                               listed at the end. Only the files changed against the base by default, --all for everything
+standards test [changed|pr|e2e] [--base <ref>]
+                               the tests related to the files changed against the base, by tag (see Lint and test)
+standards run-locked -- <cmd>  a command under the machine-wide heavy check lock, with a hard timeout
 standards structure [--check]  package names, barrels, folder names, depth, component and module folder shapes
 standards prose                the writing gate over every tracked text file the other linters skip
 standards knip [args]          knip with the git-ignored paths under ignore, in place of its own .gitignore reading,
@@ -60,6 +65,64 @@ Every check skips what git ignores. The ESLint, stylelint and markdownlint facto
 Every folder that needs ignoring is a dot-folder. `templates/gitignore` opens with a note on that rule, ignores every dot-folder with `.*/`, and lists the tracked ones (`.github/`, `.changeset/`, `.vscode/extensions.json`) as exceptions; `standards sync --check` reports a `.gitignore` that lacks `.*/` or names one dot-folder `.*/` already covers. `standards knip` runs knip with `--no-gitignore` and the git-ignored paths under `ignore`, because knip's own `.gitignore` reading matches `.*/` against the folders above a work tree and ignores every file in a work tree that lives inside a dot-folder.
 
 When the repo has a `knip.json` (or `.knip.json`), `standards knip` writes `node_modules/.cache/standards/knip.config.mjs` on every run and passes it to knip with `--config`. The module holds the repo config with the git-ignored paths under `ignore`, loads the repo's extensions with `loadStandards`, and merges in their [`knip` facets](#the-knip-facet); a repo whose extensions have none gets its `knip.json` as is. Configuration hints still name `knip.json`. Without a `knip.json`, knip finds its own config and the knip facets do not apply; `standards knip` says so when an extension has one.
+
+## Lint and test
+
+### Changed files by default
+
+`standards lint` lints the files changed against the base branch: the merge base with the default branch (`main`, `master`, or what `origin/HEAD` names), plus staged, unstaged and untracked files. `--base <ref>` or `STANDARDS_BASE` names another base. Typecheck is always project-wide. ESLint and stylelint get the changed files of their kinds, jscpd the changed code files, and prose reads the whole tree because one pass is cheap. Knip needs the whole project to find unused files, so it runs with `--all` only. A change to a config file that can change every result (`eslint.config`, `tsconfig`, `package.json`, `standards.config`) or more than 400 changed files lints everything, and so does a repo whose changed files cannot be found (no git, no default branch). The run says which mode it chose.
+
+`--all` lints everything, for main and releases. No environment variable, `CI` included, forces a full lint: the caller passes `--all` or `--changed`.
+
+### Timeouts
+
+Each lint step has a hard timeout: typecheck 5 min, eslint 10, stylelint 3, prose 2, knip 5, jscpd 5. Override them with `options: { lint: { timeouts: { eslint: 900000 } } }` in `standards.config.mjs`. On timeout the run prints which step timed out, kills the process tree that step started by its own pid (`taskkill /PID <pid> /T /F` on Windows, the process group on POSIX; never by image name), carries on with the other steps and exits non-zero. A test run has one overall timeout per mode: changed 10 min, pr 20, e2e 30, set with `options: { test: { timeouts: { pr: 1800000 } } }`.
+
+### One heavy check at a time
+
+Lint, test and `standards run-locked` take one lock for the whole machine, so two projects never build, lint and test at once. The lock is the file `~/.coord/locks/heavy-check.lock`, holding the pid, project root, command and start time of the holder (`STANDARDS_LOCK_DIR` names another folder). A run that finds a live holder waits, prints one line when it starts to wait and one when it gets the lock, and never fails for waiting. A lock whose pid is dead is stale and is taken over. The lock is released when the run ends, on SIGINT, SIGTERM and SIGHUP, and on timeout. A run started inside a locked run sees `STANDARDS_LOCK_HOLDER=<pid>` in its environment and does not wait on itself.
+
+A project locks its build the same way: `"build": "standards run-locked -- vite build"`. Code reaches the same lock through `@drizztdourden08/standards/lock` (`withHeavyLock`, `acquireLock`, `runLocked`, `lockPath`).
+
+### Tests and tags
+
+Every test carries exactly one tag (the tables are in [docs/test-standard.md](docs/test-standard.md)):
+
+| Tag | Runs with | Timeout |
+|---|---|---|
+| `critical` | `standards test` | 5 s |
+| `standard` | `standards test pr` (critical and standard) | 30 s |
+| `e2e` | `standards test e2e`, one test at a time | 120 s |
+
+Every mode runs only the tests related to the files changed against the base (`vitest related` with `--tags-filter`); no mode runs the whole project. `--base <ref>` moves the base, so a release passes the last release tag. Other arguments go to vitest. The vitest config is one call:
+
+```js
+// vitest.config.mjs
+import { defineStandardsVitest } from '@drizztdourden08/standards/vitest';
+export default defineStandardsVitest({ test: { include: ['src/**/*.test.ts'] } });
+```
+
+It sets the forks pool, at most 3 workers, the three tags with their timeouts (e2e with `concurrent: false`), `strictTags`, hook and teardown timeouts and `bail: 3`. The `test` keys you pass replace those keys.
+
+Write the tag in the options argument, on the test or on its `describe`: `it('rejects a path outside the root', { tags: ['critical'] }, () => {})`. The lint rule `local/test-has-one-tag` is on for `*.test.*` and `*.spec.*` files and fails a test with no tag, two tags or an unknown tag. `testTags: false` in the ESLint factory turns it off, and `testTags: ['critical', 'standard', 'e2e', 'bench']` changes the names it accepts.
+
+### Cargo projects
+
+The tags are vitest's, so a Rust crate maps them to cargo: `cargo test` runs critical and standard, and an e2e test is marked `#[ignore]` or put behind a cargo feature. `cargo test -- --ignored` or `cargo test --features e2e` runs e2e. Wrap the cargo scripts in `standards run-locked -- cargo test` so they share the lock.
+
+### The script block
+
+`templates/package-scripts.json` is the block every project gets:
+
+```json
+{
+  "test": "standards test",
+  "test:pr": "standards test pr",
+  "test:e2e": "standards test e2e",
+  "lint": "standards lint",
+  "lint:all": "standards lint --all"
+}
+```
 
 ## Presets
 
@@ -197,6 +260,7 @@ The core allows `{Name}.usage.ts` in every component folder and requires it nowh
 | `tsconfig/base.json`, `node.json`, `react.json` | `extends` targets |
 | `knip/base.json`, `jscpd/base.json` | the shared keys `standards sync --check` compares |
 | `templates/npmrc`, `templates/changeset-config.json` | the `.npmrc` lines and changeset keys every repo carries |
+| `templates/package-scripts.json` | the test and lint script block every project gets |
 | `.github/workflows/ci.yml`, `release.yml` | reusable workflows (`workflow_call`); both take `release-notes`, the command of the release note standard, and `release.yml` drafts the note in the version pull request and releases `v<version>` from it |
 
 ```yaml

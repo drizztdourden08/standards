@@ -9,8 +9,6 @@ const nestedUnderHolder = (env) => {
 };
 
 /**
- * Runs `job` while this process holds the machine-wide heavy check lock. The lock is released when the job ends or throws,
- * on SIGINT, SIGTERM and SIGHUP, and on process exit. A call under a live holder (STANDARDS_LOCK_HOLDER names its pid) runs at once.
  * @template T
  * @param {{ root: string, command: string, env?: NodeJS.ProcessEnv, pollMs?: number, log?: (line: string) => void }} options
  * @param {(env: NodeJS.ProcessEnv) => Promise<T>} job gets the env that marks this process as the holder

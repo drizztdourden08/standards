@@ -30,7 +30,6 @@ const runSteps = async (rootDir, lint, env, options) => {
 };
 
 /**
- * `standards lint [--all | --changed] [--root <dir>]`. Changed files by default; typecheck is always project-wide.
  * @param {{ rootDir: string, args?: string[] }} ctx
  * @returns {Promise<number>} exit code
  */

@@ -2,8 +2,7 @@
 import { spawnSync } from 'node:child_process';
 
 /**
- * Kills a process this run started, and everything it started, by its own pid. Never by image name.
- * @param {number | undefined} pid the child pid; on POSIX the child leads its own process group
+ * @param {number | undefined} pid
  */
 const killTree = (pid) => {
   if (!pid) return;

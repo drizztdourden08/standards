@@ -6,13 +6,13 @@ import { LOCK_DIR_ENV, LOCK_FILE_NAME } from './lock.constants.mjs';
 
 /**
  * @param {NodeJS.ProcessEnv} [env]
- * @returns {string} the lock file path, under ~/.coord/locks unless STANDARDS_LOCK_DIR names another folder
+ * @returns {string}
  */
 const lockPath = (env = process.env) => join(env[LOCK_DIR_ENV] ?? join(homedir(), '.coord', 'locks'), LOCK_FILE_NAME);
 
 /**
  * @param {string} file
- * @returns {{ pid: number, root: string, command: string, startedAt: string } | null | undefined} the holder, null when the file is missing, undefined when it is unreadable
+ * @returns {{ pid: number, root: string, command: string, startedAt: string } | null | undefined}
  */
 const readLock = (file) => {
   try {
@@ -26,7 +26,7 @@ const readLock = (file) => {
 /**
  * @param {string} file
  * @param {Record<string, unknown>} holder
- * @returns {boolean} whether this call created the file; false when another run already holds it
+ * @returns {boolean}
  */
 const createLock = (file, holder) => {
   mkdirSync(join(file, '..'), { recursive: true });

@@ -20,7 +20,6 @@ const baseRef = (cwd, env) => {
 };
 
 /**
- * Files changed against the merge base with the default branch, plus staged, unstaged and untracked files.
  * @param {string} cwd
  * @param {NodeJS.ProcessEnv} [env] STANDARDS_BASE names the branch to compare with
  * @returns {{ files: string[], base: string, ref: string } | { failure: string }}

@@ -2,7 +2,6 @@
 import { TEST_MODES } from './run.constants.mjs';
 
 /**
- * `standards test [mode] [--root <dir>] [--base <ref>] [vitest args]`: anything else goes to vitest as it is.
  * @param {string[]} args
  * @returns {{ mode: string, root?: string, base?: string, passthrough: string[] }}
  */

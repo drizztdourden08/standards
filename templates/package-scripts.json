@@ -1,0 +1,7 @@
+{
+  "test": "standards test",
+  "test:pr": "standards test pr",
+  "test:e2e": "standards test e2e",
+  "lint": "standards lint",
+  "lint:all": "standards lint --all"
+}
