@@ -94,13 +94,17 @@
   "peerDependencies": {
     "eslint": "^10.0.0",
     "stylelint": "^17.0.0",
-    "typescript": "^6.0.0"
+    "typescript": "^6.0.0",
+    "vitest": "^4.1.0"
   },
   "peerDependenciesMeta": {
     "stylelint": {
       "optional": true
     },
     "typescript": {
+      "optional": true
+    },
+    "vitest": {
       "optional": true
     }
   },
