@@ -15,7 +15,6 @@ const KNIP_SKIPS = /(^|\/)node_modules\//;
 const asList = (value) => (value === undefined ? [] : [value].flat());
 const knipIgnores = (rootDir) => gitIgnoredGlobs(rootDir).filter((glob) => !KNIP_SKIPS.test(glob));
 const configNameIn = (rootDir) => CONFIG_FILES.find((name) => existsSync(join(rootDir, name)));
-// standards test e2e loads vitest.e2e.config.* too
 const VITEST_CONFIGS = ['vitest.config.{js,mjs,ts,cjs,mts,cts}', 'vitest.*.config.{js,mjs,ts,cjs,mts,cts}', 'vitest.{workspace,projects}.{js,mjs,ts,cjs,mts,cts,json}'];
 const vitestFor = (config) => (config.vitest === undefined ? { vitest: { config: VITEST_CONFIGS } } : {});
 
