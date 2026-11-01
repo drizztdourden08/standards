@@ -14,7 +14,7 @@ const warningsOf = async (root, config) => {
 
 afterEach(removeTempTrees);
 
-describe('token sources', () => {
+describe('token sources', { tags: ['standard'] }, () => {
   const files = {
     'package.json': { name: 'x' },
     'kit/tokens.css': `${HEADER}:root { --space-sm: 4px; }\n`,

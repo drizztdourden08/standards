@@ -14,7 +14,7 @@ const writingHits = async (file, code) => {
   return (await lint(root, file, `${HEADER}${code}\n`)).filter((m) => WRITING.test(m));
 };
 
-describe('local/no-slop-identifiers allow list', () => {
+describe('local/no-slop-identifiers allow list', { tags: ['standard'] }, () => {
   const declare = (name) => `${HEADER}const ${name} = 1;\n\nexport { ${name} };\n`;
   const identifierHits = async (name, options) => {
     const root = tempTree({ 'package.json': { name: 'x' } });
@@ -41,7 +41,7 @@ describe('local/no-slop-identifiers allow list', () => {
   });
 });
 
-describe('expected values in test assertions', () => {
+describe('expected values in test assertions', { tags: ['standard'] }, () => {
   it('passes the text a matcher expects in a test file', async () => {
     const code = [
       "expect(toast()).toBe('File saved!');",
@@ -70,7 +70,7 @@ describe('expected values in test assertions', () => {
   });
 });
 
-describe('verbatim text', () => {
+describe('verbatim text', { tags: ['standard'] }, () => {
   const DIALOGUE = 'src/dialogue.mjs';
   const VERBATIM = { verbatimText: [{ files: [DIALOGUE], why: 'the dialogue table of a game, reproduced as the game shows it' }] };
   const hits = async (file, lines, options = VERBATIM) => {

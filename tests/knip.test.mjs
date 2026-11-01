@@ -7,7 +7,7 @@ import { gitTree, tempTree, removeTempTrees } from './temp-tree.mjs';
 
 afterEach(removeTempTrees);
 
-describe('knipConfigFor', () => {
+describe('knipConfigFor', { tags: ['standard'] }, () => {
   it('adds every git-ignored path but node_modules, which knip skips itself, to the ignore list of knip.json', () => {
     const root = gitTree({ 'knip.json': { entry: ['a.mjs'], ignore: 'vendor/**' }, '.gitignore': '.*/\ngen/\nnode_modules/\n', 'gen/a.mjs': 'x', '.cache/b.mjs': 'x', 'node_modules/x/a.js': 'x' });
     expect(knipConfigFor(root)).toEqual({ entry: ['a.mjs'], ignore: ['vendor/**', '.cache/**', 'gen/**'] });
@@ -18,7 +18,7 @@ describe('knipConfigFor', () => {
   });
 });
 
-describe('dropGitIgnoredHints', () => {
+describe('dropGitIgnoredHints', { tags: ['standard'] }, () => {
   it('drops the unused-ignore hints of git-ignored paths and names the repo config', () => {
     const root = tempTree({ 'cache/git-ignored.json': { source: 'knip.json', ignore: ['gen/**'] } });
     const hints = [{ type: 'ignore', identifier: 'gen/**' }, { type: 'ignore', identifier: 'vendor/**' }, { type: 'ignoreDependencies', identifier: 'react' }];

@@ -15,7 +15,7 @@ afterEach(() => {
   removeTempTrees();
 });
 
-describe('runProse', () => {
+describe('runProse', { tags: ['standard'] }, () => {
   it('skips every dot-folder when it walks a folder git does not know', () => {
     const root = tempTree({ '.tool/notes.txt': 'A robust tool.\n', 'app/.state/notes.txt': 'A robust tool.\n', 'notes.txt': 'A robust tool.\n' });
     const lines = captured();
@@ -45,13 +45,13 @@ describe('runProse', () => {
   });
 });
 
-describe('readProseIgnore', () => {
+describe('readProseIgnore', { tags: ['standard'] }, () => {
   it('refuses an entry without a why', () => {
     expect(readProseIgnore('LICENSE.txt\n').problems).toEqual(['line 1: "LICENSE.txt" has no why. Write "<glob>  <why this file is skipped>".']);
   });
 });
 
-describe('findSlop', () => {
+describe('findSlop', { tags: ['standard'] }, () => {
   it('reports a banned word and leaves identifiers alone', () => {
     expect(findSlop('We frobnicate; frobnicateAll() stays.', { banned: ['frobnicate'] }).map((hit) => hit.match)).toEqual(['frobnicate']);
   });

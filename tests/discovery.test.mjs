@@ -44,7 +44,7 @@ afterEach(() => {
   removeTempTrees();
 });
 
-describe('installing a module is enough', () => {
+describe('installing a module is enough', { tags: ['standard'] }, () => {
   it('loads the extension of a root dependency without any config', async () => {
     const root = tempTree({ 'package.json': { name: '@acme/repo', devDependencies: { '@acme/module-widgets': '1.0.0' } }, ...FIXTURE_MODULE, ...PACKAGE });
     const lines = captured();

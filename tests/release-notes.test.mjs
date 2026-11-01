@@ -29,7 +29,7 @@ The map opens where you left it, and two crashes on start are gone.
 
 const messagesOf = (text, rules = {}) => checkReleaseNote(text, { version: '1.2.0', ...rules }).map((f) => `${f.line}: ${f.message}`);
 
-describe('checkReleaseNote', () => {
+describe('checkReleaseNote', { tags: ['standard'] }, () => {
   it('passes a note in the standard format', () => {
     expect(messagesOf(GOOD, { product: 'Atlas' })).toEqual([]);
   });
@@ -97,7 +97,7 @@ describe('checkReleaseNote', () => {
 
 const repo = (files) => tempTree({ 'package.json': { name: '@acme/atlas', version: '1.2.0' }, ...files });
 
-describe('checkRepoNotes', () => {
+describe('checkRepoNotes', { tags: ['standard'] }, () => {
   it('passes a repo that has no notes yet, and fails a named version without one', () => {
     const root = repo({});
     expect(checkRepoNotes({ rootDir: root }).findings).toEqual([]);
@@ -121,7 +121,7 @@ describe('checkRepoNotes', () => {
   });
 });
 
-describe('the release version', () => {
+describe('the release version', { tags: ['standard'] }, () => {
   it('is the root version, else the one version the published packages share', () => {
     expect(releaseVersionOf(repo({}))).toBe('1.2.0');
     const mono = tempTree({
@@ -140,7 +140,7 @@ describe('the release version', () => {
   });
 });
 
-describe('drafts and bodies', () => {
+describe('drafts and bodies', { tags: ['standard'] }, () => {
   const CHANGELOG = `# @acme/atlas
 
 ## 1.3.0
@@ -200,7 +200,7 @@ describe('drafts and bodies', () => {
   });
 });
 
-describe('the releaseNotes facet', () => {
+describe('the releaseNotes facet', { tags: ['standard'] }, () => {
   it('takes sections and a product, and names a wrong key', () => {
     expect(defineExtension({ id: 'x', releaseNotes: { sections: ['Controllers'], product: 'Atlas' } }).releaseNotes.product).toBe('Atlas');
     expect(() => defineExtension({ id: 'x', releaseNotes: { section: [] } })).toThrow('unknown releaseNotes key section; the keys are sections, product');

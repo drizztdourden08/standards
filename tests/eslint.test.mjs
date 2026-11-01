@@ -6,13 +6,13 @@ import { tempTree, removeTempTrees } from './temp-tree.mjs';
 
 afterEach(removeTempTrees);
 
-describe('rule ids', () => {
+describe('rule ids', { tags: ['standard'] }, () => {
   it('keeps every local rule id', () => {
     expect(Object.keys(LOCAL_RULES)).toEqual(expect.arrayContaining(['no-raw-html', 'no-em-dash', 'no-slop-prose', 'no-comments', 'one-export-per-file', 'no-generic-folder-names', 'file-header']));
   });
 });
 
-describe('local/file-header', () => {
+describe('local/file-header', { tags: ['standard'] }, () => {
   it('reports a file without the header', async () => {
     const root = tempTree({ 'package.json': { name: 'x' } });
     expect(await lint(root, 'a.mjs', 'const a = 1;\n\nexport { a };\n')).toEqual([
@@ -40,7 +40,7 @@ describe('local/file-header', () => {
   });
 });
 
-describe('extension options', () => {
+describe('extension options', { tags: ['standard'] }, () => {
   it('uses the raw-control messages an extension gives', async () => {
     const root = tempTree({ 'package.json': { name: 'x' } });
     const rawControls = [{ selector: "JSXOpeningElement[name.name='input']", message: 'Use TextInput.' }];
@@ -94,7 +94,7 @@ describe('extension options', () => {
   });
 });
 
-describe('local/no-tool-brand-words', () => {
+describe('local/no-tool-brand-words', { tags: ['standard'] }, () => {
   it('reports a banned word in a comment and in a string, a single-word string too', async () => {
     const root = tempTree({ 'package.json': { name: 'x' } });
     const code = `${HEADER}/** @type {string} written for Claude */\nconst a = 'ask the chatbot';\nconst b = 'openai';\n\nexport { a, b };\n`;
@@ -115,7 +115,7 @@ describe('local/no-tool-brand-words', () => {
   });
 });
 
-describe('local/no-slop-identifiers tool and vendor segments', () => {
+describe('local/no-slop-identifiers tool and vendor segments', { tags: ['standard'] }, () => {
   const declare = (name) => `${HEADER}const ${name} = 1;\n\nexport { ${name} };\n`;
   const identifierHits = async (root, name) => (await lint(root, 'a.mjs', declare(name))).filter((m) => m.startsWith('local/no-slop-identifiers'));
 

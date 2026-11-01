@@ -16,6 +16,7 @@ import { hookFileNamedAfterHook } from './rules/hook-file-named-after-hook.mjs';
 import { cssBesideComponent } from './rules/css-beside-component.mjs';
 import { noCrossPackageRelative, noDeepPackageImport, noGenericFolderNames } from './rules/boundaries.mjs';
 import { fileHeader } from './rules/file-header.mjs';
+import { testHasOneTag } from './rules/test-has-one-tag.mjs';
 
 const LOCAL_RULES = {
   'no-raw-html': noRawHtml,
@@ -40,6 +41,7 @@ const LOCAL_RULES = {
   'no-deep-package-import': noDeepPackageImport,
   'no-generic-folder-names': noGenericFolderNames,
   'file-header': fileHeader,
+  'test-has-one-tag': testHasOneTag,
 };
 
 const LOCAL_PLUGIN = { meta: { name: '@drizztdourden08/standards' }, rules: LOCAL_RULES };

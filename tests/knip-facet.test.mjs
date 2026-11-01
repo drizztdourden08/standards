@@ -21,7 +21,7 @@ const EXTENSION_MODULE = [
 
 const loaded = (extensions, rootDir = '/repo') => ({ rootDir, context: { rootDir }, extensions });
 
-describe('withKnipFacets', () => {
+describe('withKnipFacets', { tags: ['standard'] }, () => {
   it('leaves the config as it is when no extension has a knip facet', () => {
     const config = { entry: ['a.ts'], ignore: [] };
     expect(withKnipFacets(config, loaded([{ id: 'x', prose: {} }]))).toBe(config);
@@ -61,7 +61,7 @@ describe('withKnipFacets', () => {
   });
 });
 
-describe('the written knip config module', () => {
+describe('the written knip config module', { tags: ['standard'] }, () => {
   it('loads the extensions of the repo and merges their compilers and entries, in place of the old knip.json', async () => {
     const root = tempTree({
       'package.json': { name: 'app', private: true },

@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { standardsMarkdownlint, RULES_MODULE } from '../markdownlint/index.mjs';
 import rules from '../markdownlint/rules.mjs';
 
-describe('markdownlint', () => {
+describe('markdownlint', { tags: ['standard'] }, () => {
   it('keeps the BROCK rule ids', () => {
     expect(rules.map((rule) => rule.names[0])).toEqual(['BROCK001', 'BROCK002', 'BROCK003', 'BROCK004', 'BROCK005', 'BROCK006', 'BROCK007']);
   });

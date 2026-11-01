@@ -3,7 +3,7 @@ import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import { LOCAL_PLUGIN } from './local-rules.mjs';
 import { QUALITY_RULES, TS_QUALITY_RULES, TYPED_RULES, RESTRICTED_SYNTAX, RAW_CONTROLS, NO_DEFAULT_EXPORT, NO_DOUBLE_CAST } from './quality-rules.mjs';
-import { DEFAULT_CONSOLE_GLOBS, DEFAULT_EXPORT_GLOBS, NODE_GLOBALS, PRIMITIVE_RULES, SHAPE_RULES, SHAPE_RULES_OFF, SOURCE_FILES } from './rule-sets.mjs';
+import { DEFAULT_CONSOLE_GLOBS, DEFAULT_EXPORT_GLOBS, NODE_GLOBALS, PRIMITIVE_RULES, SHAPE_RULES, SHAPE_RULES_OFF, SOURCE_FILES, TEST_FILES } from './rule-sets.mjs';
 
 const withoutSyntax = (dropped, extra = []) => ['error', ...RESTRICTED_SYNTAX.filter((rule) => rule !== dropped), ...extra];
 
@@ -89,9 +89,15 @@ const exceptionBlocks = (opts, shared) => [
   ...justifiedBlocks(opts, shared),
 ];
 
+const testTagBlocks = (opts) => {
+  if (opts.testTags === false) return [];
+  const rule = Array.isArray(opts.testTags) ? ['error', { tags: opts.testTags }] : 'error';
+  return [{ files: TEST_FILES, plugins: { local: LOCAL_PLUGIN }, rules: { 'local/test-has-one-tag': rule } }];
+};
+
 const extensionRuleBlocks = (facets) =>
   facets.filter((facet) => facet.plugins || facet.rules).map((facet) => ({ files: SOURCE_FILES, plugins: facet.plugins ?? {}, rules: facet.rules ?? {} }));
 
 const extensionConfigs = (facets) => facets.flatMap((facet) => facet.configs ?? []);
 
-export { tsBlock, jsBlock, settingsBlocks, exceptionBlocks, extensionRuleBlocks, extensionConfigs };
+export { tsBlock, jsBlock, settingsBlocks, testTagBlocks, exceptionBlocks, extensionRuleBlocks, extensionConfigs };

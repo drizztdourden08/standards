@@ -13,7 +13,7 @@ const HEADER = '/* @layer tooling-scripts @kind logic */\n';
 
 afterEach(removeTempTrees);
 
-describe('gitIgnoredGlobs', () => {
+describe('gitIgnoredGlobs', { tags: ['standard'] }, () => {
   it('lists what .gitignore ignores, a folder as one glob', () => {
     const root = gitTree({ '.gitignore': 'build/\n*.log\n', 'build/a.js': 'x', 'b.log': 'x', 'tool/x/a.mjs': 'x', 'src/a.mjs': 'x' });
     expect(gitIgnoredGlobs(root).sort()).toEqual(['b.log', 'build/**']);
@@ -35,7 +35,7 @@ describe('gitIgnoredGlobs', () => {
   });
 });
 
-describe('every check skips what git ignores', () => {
+describe('every check skips what git ignores', { tags: ['standard'] }, () => {
   const files = { 'package.json': { name: 'x' }, '.gitignore': 'scratch/\n', 'scratch/a.mjs': 'x', 'scratch/a.md': 'x', 'src/a.mjs': 'x' };
 
   it('ESLint ignores the ignored folder and still lints the rest', async () => {

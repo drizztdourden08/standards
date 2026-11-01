@@ -13,7 +13,7 @@ const usageRules = structureRules([REQUIRED_USAGE]);
 
 afterEach(removeTempTrees);
 
-describe('component folders', () => {
+describe('component folders', { tags: ['standard'] }, () => {
   it('accepts Name.usage.ts in any component folder without the extension', () => {
     const root = tempTree(files([...BUTTON, 'src/primitives/Button/Button.usage.ts']));
     expect(checkShapes(root, join(root, 'src'))).toEqual([]);
@@ -50,7 +50,7 @@ describe('component folders', () => {
   });
 });
 
-describe('module folders', () => {
+describe('module folders', { tags: ['standard'] }, () => {
   it('names the module file forms, with the ones extensions add', () => {
     const root = tempTree(files(['src/index.ts', 'src/boot/theme.task.ts', 'src/boot/Stray File.txt']));
     const rules = structureRules([{ id: 'boot', structure: { moduleFiles: [{ pattern: /^[a-z][a-z0-9-]*\.task\.ts$/, label: '<id>.task.ts' }] } }]);
@@ -82,7 +82,7 @@ describe('module folders', () => {
   });
 });
 
-describe('collectFindings', () => {
+describe('collectFindings', { tags: ['standard'] }, () => {
   it('checks names, barrels, generic folders and depth', async () => {
     const root = tempTree({
       'pnpm-workspace.yaml': "packages:\n  - 'packages/*'\n",

@@ -9,7 +9,7 @@ const MODULE_EXTENSION = 'export default { id: "from-module", prose: { banned: [
 
 afterEach(removeTempTrees);
 
-describe('defineExtension', () => {
+describe('defineExtension', { tags: ['standard'] }, () => {
   it('returns the extension it is given', () => {
     const extension = { id: 'x', prose: { allow: ['harness'] } };
     expect(defineExtension(extension)).toBe(extension);
@@ -41,7 +41,7 @@ describe('defineExtension', () => {
   });
 });
 
-describe('loadStandards', () => {
+describe('loadStandards', { tags: ['standard'] }, () => {
   it('loads presets, then discovered, then config extensions, then the factory ones', () => {
     const root = tempTree({
       'package.json': { name: 'app', devDependencies: { found: '1.0.0' } },
@@ -84,7 +84,7 @@ describe('loadStandards', () => {
   });
 });
 
-describe('facetOptions', () => {
+describe('facetOptions', { tags: ['standard'] }, () => {
   it('calls an options function with the context and merges what it returns with plain options', () => {
     const seen = [];
     const extensions = [
@@ -101,7 +101,7 @@ describe('facetOptions', () => {
   });
 });
 
-describe('the options context', () => {
+describe('the options context', { tags: ['standard'] }, () => {
   it('holds the root alone when the run starts there', () => {
     const root = tempTree({ 'package.json': { name: 'app' } });
     expect(loadStandards({ rootDir: root }).context).toEqual({ rootDir: root });
@@ -124,7 +124,7 @@ describe('the options context', () => {
   });
 });
 
-describe('mergeOptions', () => {
+describe('mergeOptions', { tags: ['standard'] }, () => {
   it('joins arrays, merges objects and lets the later scalar win', () => {
     expect(mergeOptions({ a: ['x'], o: { k: 1 }, s: 1 }, { a: ['y', 'x'], o: { j: 2 }, s: 2 })).toEqual({ a: ['x', 'y'], o: { k: 1, j: 2 }, s: 2 });
   });

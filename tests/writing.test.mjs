@@ -4,7 +4,7 @@ import { findSlop, GROUPS, RULE_BY_GROUP } from '../writing/index.mjs';
 
 const brandHits = (text) => findSlop(text, { groups: ['brand'] }).map((hit) => hit.match);
 
-describe('tool-brand-word', () => {
+describe('tool-brand-word', { tags: ['standard'] }, () => {
   it('runs with the default groups under its own rule id', () => {
     expect(GROUPS).toContain('brand');
     expect(RULE_BY_GROUP.brand).toBe('no-tool-brand-words');

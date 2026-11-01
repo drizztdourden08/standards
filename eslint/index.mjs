@@ -8,7 +8,7 @@ import { LOCAL_RULES, LOCAL_PLUGIN } from './local-rules.mjs';
 import { DEFAULT_COMMENT_ALLOW } from './rules/no-comments.mjs';
 import { NO_INLINE_EXPORT, RAW_CONTROLS, RESTRICTED_SYNTAX, QUALITY_RULES, TS_QUALITY_RULES, TYPED_RULES } from './quality-rules.mjs';
 import { BASE_IGNORES, BOUNDARY_RULES, PRIMITIVE_RULES, DEFAULT_CONSOLE_GLOBS, SHAPE_RULES, slopRules } from './rule-sets.mjs';
-import { tsBlock, jsBlock, settingsBlocks, exceptionBlocks, extensionRuleBlocks, extensionConfigs } from './blocks.mjs';
+import { tsBlock, jsBlock, settingsBlocks, testTagBlocks, exceptionBlocks, extensionRuleBlocks, extensionConfigs } from './blocks.mjs';
 
 const gitIgnoreBlocks = (rootDir) => {
   const ignores = gitIgnoredGlobs(rootDir);
@@ -40,6 +40,7 @@ const standardsEslint = (input = {}) => {
     ...settingsBlocks(opts),
     tsBlock(opts, shared),
     jsBlock(shared),
+    ...testTagBlocks(opts),
     ...extensionRuleBlocks(facets),
     ...exceptionBlocks(opts, shared),
     ...extensionConfigs(facets),

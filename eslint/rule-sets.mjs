@@ -10,6 +10,7 @@ const DEFAULT_CONSOLE_GLOBS = ['**/bin/**', '**/scripts/**', '**/tooling/**', '*
 const DEFAULT_EXPORT_GLOBS = ['**/*.stories.{ts,tsx}', '**/stylelint-rules/*.mjs', '**/standards.extension.mjs'];
 const NODE_GLOBALS = { process: 'readonly', console: 'readonly', Buffer: 'readonly', URL: 'readonly', fetch: 'readonly', setTimeout: 'readonly', clearTimeout: 'readonly' };
 const SOURCE_FILES = ['**/*.{ts,tsx,js,mjs,cjs,jsx}'];
+const TEST_FILES = ['**/*.{test,spec}.{ts,tsx,js,mjs,cjs,jsx}'];
 
 /**
  * @param {string[]} allow
@@ -51,4 +52,4 @@ const SHAPE_RULES = {
 
 const SHAPE_RULES_OFF = Object.fromEntries(Object.keys(SHAPE_RULES).map((rule) => [rule, 'off']));
 
-export { BASE_IGNORES, DEFAULT_CONSOLE_GLOBS, DEFAULT_EXPORT_GLOBS, NODE_GLOBALS, SOURCE_FILES, slopRules, BOUNDARY_RULES, PRIMITIVE_RULES, SHAPE_RULES, SHAPE_RULES_OFF };
+export { BASE_IGNORES, DEFAULT_CONSOLE_GLOBS, DEFAULT_EXPORT_GLOBS, NODE_GLOBALS, SOURCE_FILES, TEST_FILES, slopRules, BOUNDARY_RULES, PRIMITIVE_RULES, SHAPE_RULES, SHAPE_RULES_OFF };

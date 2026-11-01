@@ -22,7 +22,7 @@ afterEach(() => {
   removeTempTrees();
 });
 
-describe('shared files', () => {
+describe('shared files', { tags: ['standard'] }, () => {
   it('names a .gitignore that leaves the dot-folder convention', () => {
     const lines = ['node_modules/', '.vite/', '/.cache/', '**/.out/', 'app/.state/**', '!.github/', '.vscode/*', '.env-local'];
     const root = tempTree({ '.npmrc': NPMRC, '.gitignore': `${lines.join('\n')}\n` });
@@ -82,7 +82,7 @@ describe('shared files', () => {
   });
 });
 
-describe('copies of standards', () => {
+describe('copies of standards', { tags: ['standard'] }, () => {
   it('finds one copy in a plain install', () => {
     const root = tempTree({ 'node_modules/@drizztdourden08/standards/package.json': STANDARDS_PKG });
     expect(standardsCopies(root)).toHaveLength(1);
