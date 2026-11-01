@@ -1,5 +1,11 @@
 # @drizztdourden08/standards
 
+## 0.13.0
+
+### Minor Changes
+
+- ff44d64: The lint and test standard. `standards lint` lints the files changed against the base branch by default and everything with `--all`; no `CI` variable forces a full lint. Each lint step has a hard timeout that kills its process tree by pid. Lint, test and the new `standards run-locked -- <cmd>` take one machine-wide lock (`~/.coord/locks/heavy-check.lock`, exported as `@drizztdourden08/standards/lock`), so only one heavy check runs at a time. `standards test [changed|pr|e2e] [--base <ref>]` runs only the tests related to the changed files, filtered by the tags `critical`, `standard` and `e2e`, and no mode runs the whole project. `@drizztdourden08/standards/vitest` exports `defineStandardsVitest`, the shared vitest config with the three tags and their timeouts. The rule `local/test-has-one-tag` fails a test with no tag, two tags or an unknown tag. `templates/package-scripts.json` holds the script block, and the README and `docs/test-standard.md` describe the standard.
+
 ## 0.12.0
 
 ### Minor Changes
