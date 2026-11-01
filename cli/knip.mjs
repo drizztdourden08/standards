@@ -7,6 +7,7 @@ import { loadStandards, OWN_ROOT } from '../config/load.mjs';
 import { gitIgnoredGlobs } from '../config/git-ignored.mjs';
 import { knipPreprocessors } from '../config/knip-preprocessors.mjs';
 import { binOf } from './bin-of.mjs';
+import { preprocessorArgs } from './knip-chain.mjs';
 
 const HINTS = join(import.meta.dirname, 'knip-hints.mjs');
 const CONFIG_FILES = ['knip.json', '.knip.json'];
@@ -79,9 +80,10 @@ const runKnip = ({ rootDir, args = [], label = 'standards knip' }) => {
   }
   const config = knipConfigFor(rootDir);
   if (!config) warnUnusedFacets(rootDir, label);
-  const configArgs = config ? ['--no-gitignore', '--config', writeConfig(rootDir, config), '--preprocessor', HINTS] : [];
-  const extensionArgs = knipPreprocessors(loadStandards({ rootDir })).flatMap((path) => ['--preprocessor', path]);
-  return spawnSync(process.execPath, [bin, ...configArgs, ...extensionArgs, ...args], { cwd: rootDir, stdio: 'inherit' }).status ?? 1;
+  const configArgs = config ? ['--no-gitignore', '--config', writeConfig(rootDir, config)] : [];
+  const steps = [...(config ? [HINTS] : []), ...knipPreprocessors(loadStandards({ rootDir }))];
+  const stepArgs = preprocessorArgs(join(rootDir, ...CACHE_DIR), steps);
+  return spawnSync(process.execPath, [bin, ...configArgs, ...stepArgs, ...args], { cwd: rootDir, stdio: 'inherit' }).status ?? 1;
 };
 
 export { runKnip, knipConfigFor, writeConfig };

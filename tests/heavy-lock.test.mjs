@@ -56,4 +56,11 @@ describe('heavy check lock (K4 refusal of a second run)', { tags: ['critical'] }
     release();
     expect(JSON.parse(readFileSync(file, 'utf8')).pid).toBe(999998);
   });
+
+  it('gives up past the wait limit with an error naming the holder', async () => {
+    const env = lockEnv();
+    holderFile(env, 999997);
+    const job = acquireLock({ root: '/mine', command: 'standards test', env, pollMs: 1, waitMs: 5, alive: () => true, log: () => undefined });
+    await expect(job).rejects.toThrow(/gave up after .*pid 999997.*STANDARDS_LOCK_WAIT_S/);
+  });
 });

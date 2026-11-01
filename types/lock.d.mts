@@ -11,10 +11,11 @@ export interface LockJob {
   command: string;
   env?: NodeJS.ProcessEnv;
   pollMs?: number;
+  waitMs?: number;
   log?: (line: string) => void;
 }
 
-/** takes the machine-wide heavy check lock, waiting its turn; the returned function releases it */
+/** takes the machine-wide heavy check lock, waiting its turn up to waitMs (STANDARDS_LOCK_WAIT_S, 300 s by default); the returned function releases it */
 export function acquireLock(job: LockJob & { alive?: (pid: number) => boolean }): Promise<() => void>;
 
 /** runs the job under the lock; the job gets the env that marks this process as the holder */
