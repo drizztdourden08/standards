@@ -1,60 +1,48 @@
 /* @layer tooling-scripts @kind logic */
-import { spawnSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
-import { loadStandards, OWN_ROOT } from '../config/load.mjs';
-import { gitIgnoredGlobs } from '../config/git-ignored.mjs';
-import { runProse } from '../prose/index.mjs';
-import { binOf } from './bin-of.mjs';
-import { runKnip } from './knip.mjs';
+import { parseArgs } from 'node:util';
+import { resolve } from 'node:path';
+import { loadStandards } from '../config/load.mjs';
+import { withHeavyLock } from '../lock/with-lock.mjs';
+import { lintSteps, stepBin } from './lint-steps.mjs';
+import { planLint } from './lint-plan.mjs';
+import { runTimed } from './run-timed.mjs';
+import { BASE_ENV, LINT_TIMEOUTS_MS } from './run.constants.mjs';
 
-const runTool = (rootDir, { name, from, args }) => {
-  const bin = binOf(name, from);
+const OPTIONS = { root: { type: 'string' }, all: { type: 'boolean' }, changed: { type: 'boolean' }, base: { type: 'string' } };
+
+const runStep = async (rootDir, step, lint, env) => {
+  const bin = stepBin(step);
   if (!bin) {
-    console.error(`standards lint: ${name} is not installed`);
-    return 1;
+    console.error(`standards lint: ${step.name} is not installed`);
+    return { id: step.id, failed: true, timedOut: false };
   }
-  return spawnSync(process.execPath, [bin, ...args], { cwd: rootDir, stdio: 'inherit' }).status ?? 1;
+  const timeoutMs = lint.timeouts?.[step.id] ?? LINT_TIMEOUTS_MS[step.id];
+  const { code, timedOut } = await runTimed({ command: process.execPath, args: [bin, ...step.args], cwd: rootDir, env, timeoutMs, label: `lint step ${step.id}` });
+  return { id: step.id, failed: code !== 0, timedOut };
 };
 
-const stylelintArgs = (rootDir, globs) => [
-  ...globs,
-  '--allow-empty-input',
-  ...(existsSync(join(rootDir, '.gitignore')) ? ['--ignore-path', '.gitignore'] : []),
-];
-
-const jscpdIgnores = (rootDir) => {
-  const file = join(rootDir, '.jscpd.json');
-  const own = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')).ignore ?? [] : [];
-  return [...own, ...gitIgnoredGlobs(rootDir)];
-};
-
-const jscpdArgs = (rootDir) => {
-  const ignores = jscpdIgnores(rootDir);
-  return ignores.length ? ['.', '--ignore', ignores.join(',')] : ['.'];
-};
-
-const steps = (rootDir, lint) => {
-  const theirs = [rootDir, OWN_ROOT];
-  return [
-    { id: 'typecheck', when: existsSync(join(rootDir, 'tsconfig.json')), name: 'typescript', from: theirs, args: ['--noEmit'] },
-    { id: 'eslint', name: 'eslint', from: theirs, args: ['.'] },
-    { id: 'stylelint', name: 'stylelint', from: theirs, args: stylelintArgs(rootDir, lint.stylelint ?? ['**/*.css']) },
-    { id: 'prose', run: () => runProse({ rootDir }) },
-    { id: 'knip', run: () => runKnip({ rootDir }) },
-    { id: 'jscpd', name: 'jscpd', from: theirs, args: jscpdArgs(rootDir) },
-  ].filter((step) => step.when !== false && !(lint.skip ?? []).includes(step.id));
+const runSteps = async (rootDir, lint, env, options) => {
+  const plan = planLint({ cwd: rootDir, all: options.all, changed: options.changed, env: options.base ? { ...env, [BASE_ENV]: options.base } : env });
+  console.log(plan.line);
+  const results = [];
+  for (const step of lintSteps({ rootDir, lint, plan })) results.push(await runStep(rootDir, step, lint, env));
+  return results.filter((result) => result.failed);
 };
 
 /**
- * @param {{ rootDir: string }} ctx
- * @returns {number} exit code
+ * `standards lint [--all | --changed] [--root <dir>]`. Changed files by default; typecheck is always project-wide.
+ * @param {{ rootDir: string, args?: string[] }} ctx
+ * @returns {Promise<number>} exit code
  */
-const runLint = ({ rootDir }) => {
+const runLint = async (ctx) => {
+  const { values } = parseArgs({ args: ctx.args ?? [], options: OPTIONS });
+  const rootDir = resolve(values.root ?? ctx.rootDir);
   const lint = loadStandards({ rootDir }).options.lint ?? {};
-  const failed = steps(rootDir, lint).filter((step) => (step.run ? step.run() : runTool(rootDir, step)) !== 0).map((step) => step.id);
+  const failed = await withHeavyLock({ root: rootDir, command: 'standards lint' }, (env) => runSteps(rootDir, lint, env, values));
   if (!failed.length) return 0;
-  console.error(`standards lint: ${failed.length} step(s) failed: ${failed.join(', ')}`);
+  const timedOut = failed.filter((result) => result.timedOut).map((result) => result.id);
+  if (timedOut.length) console.error(`standards lint: timed out: ${timedOut.join(', ')}`);
+  console.error(`standards lint: ${failed.length} step(s) failed: ${failed.map((result) => result.id).join(', ')}`);
   return 1;
 };
 

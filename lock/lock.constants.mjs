@@ -1,0 +1,9 @@
+/* @layer tooling-scripts @kind constants */
+const LOCK_FILE_NAME = 'heavy-check.lock';
+const LOCK_DIR_ENV = 'STANDARDS_LOCK_DIR';
+const LOCK_HOLDER_ENV = 'STANDARDS_LOCK_HOLDER';
+const POLL_MS = 1000;
+const UNREADABLE_GRACE_MS = 5000;
+const SIGNALS = ['SIGINT', 'SIGTERM', 'SIGHUP'];
+
+export { LOCK_FILE_NAME, LOCK_DIR_ENV, LOCK_HOLDER_ENV, POLL_MS, UNREADABLE_GRACE_MS, SIGNALS };

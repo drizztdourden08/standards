@@ -5,7 +5,13 @@ import { parseArgs } from 'node:util';
 
 const USAGE = `standards <command> [--root <dir>]
 
-  lint                 typecheck, eslint, stylelint, prose, knip and jscpd in one run
+  lint [--all] [--base <ref>]
+                       typecheck, eslint, stylelint, prose, knip and jscpd; only the files changed against the base
+                       branch by default, --all for everything (knip runs with --all only)
+  test [changed|pr|e2e] [--base <ref>] [vitest args]
+                       the tests related to the files changed against the base: changed = critical, pr = critical
+                       and standard, e2e = e2e; one heavy check at a time, hard timeout
+  run-locked -- <cmd>  run a command under the machine-wide heavy check lock (~/.coord/locks)
   structure [--check]  the folder standard: package names, barrels, folder names, depth, component and module shapes
   prose                the writing gate over every tracked text file the other linters skip
   knip [args]          knip with every git-ignored path under ignore, in place of its own .gitignore reading,
@@ -24,6 +30,8 @@ Options:
 
 const COMMANDS = {
   lint: async () => (await import('../cli/lint.mjs')).runLint,
+  test: async () => (await import('../cli/test.mjs')).runTest,
+  'run-locked': async () => (await import('../lock/run-locked.mjs')).runLocked,
   structure: async () => (await import('../structure/index.mjs')).runStructure,
   prose: async () => (await import('../prose/index.mjs')).runProse,
   sync: async () => (await import('../sync/index.mjs')).runSync,
@@ -31,7 +39,7 @@ const COMMANDS = {
   'release-notes': async () => (await import('../release-notes/index.mjs')).runReleaseNotes,
 };
 
-const WORD_COMMANDS = ['knip', 'release-notes'];
+const WORD_COMMANDS = ['knip', 'release-notes', 'lint', 'test', 'run-locked'];
 
 const OPTIONS = {
   root: { type: 'string' },
