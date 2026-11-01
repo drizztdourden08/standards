@@ -5,6 +5,11 @@ const SUITE_ROOTS = new Set(['describe', 'suite']);
 const MODIFIERS = new Set(['only', 'skip', 'concurrent', 'sequential', 'fails', 'each', 'for', 'runIf', 'skipIf', 'shuffle', 'todo', 'serial', 'parallel', 'fixme']);
 const TAG_KEYS = { tags: { prefix: '' }, tag: { prefix: '@' } };
 
+const branchRoot = (node, rootOf) => {
+  const [yes, no] = [rootOf(node.consequent), rootOf(node.alternate)];
+  return yes && no && yes.name === no.name ? { name: yes.name, todo: yes.todo && no.todo, group: yes.group || no.group } : null;
+};
+
 const rootOf = (callee) => {
   let node = callee;
   let todo = false;
@@ -17,6 +22,7 @@ const rootOf = (callee) => {
       node = node.object;
     } else break;
   }
+  if (node.type === 'ConditionalExpression') return branchRoot(node, rootOf);
   return node.type === 'Identifier' ? { name: node.name, todo, group } : null;
 };
 
@@ -29,12 +35,15 @@ const staticStrings = (value) => {
   return null;
 };
 
+const isText = (node) => (node.type === 'Literal' && typeof node.value === 'string') || node.type === 'TemplateLiteral';
+
 const isAnnotation = (call) => {
   const first = call.arguments[0];
+  if (isText(call.arguments.at(-1))) return true;
   return first.type === 'ArrowFunctionExpression' || first.type === 'FunctionExpression' || (first.type === 'Literal' && typeof first.value === 'boolean');
 };
 
-const isSuiteRoot = (root) => SUITE_ROOTS.has(root.name) || (root.group && root.name === 'test');
+const isSuiteRoot = (root) => SUITE_ROOTS.has(root.name) || /^describe[A-Z_]/.test(root.name) || (root.group && root.name === 'test');
 
 const isTestCall = (root, call) => TEST_ROOTS.has(root.name) && call.arguments.length >= 2 && !isAnnotation(call);
 

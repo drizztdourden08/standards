@@ -83,7 +83,15 @@ describe('local/test-has-one-tag on Playwright and e2e specs (K1 business logic)
   });
 
   it('ignores a skip annotation call inside a Playwright test', async () => {
-    expect(await tagMessages(src("it.skip(true, 'not on this browser');", "it.skip(() => true, 'later');"))).toEqual([]);
+    expect(await tagMessages(src("it.skip(true, 'not on this browser');", "it.skip(() => true, 'later');", "it.skip(!ready, 'needs the dataset');"))).toEqual([]);
+  });
+
+  it('reads the tag on a describe wrapper and on a conditional describe', async () => {
+    const wrapper = src("describeDataset('c', { tags: ['critical'] }, () => {", "  it('d', () => {});", '});');
+    const conditional = src("(ready ? describe : describe.skip)('c', { tags: ['standard'] }, () => {", "  it('d', () => {});", '});');
+    expect(await tagMessages(wrapper)).toEqual([]);
+    expect(await tagMessages(conditional)).toEqual([]);
+    expect(await tagMessages(src("(ready ? describe : describe.skip)('c', () => {", "  it('d', () => {});", '});'))).toHaveLength(1);
   });
 
   it('applies to e2e specs and to files in the tests and e2e folders', async () => {

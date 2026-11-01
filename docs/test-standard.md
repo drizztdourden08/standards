@@ -11,7 +11,7 @@ The full standard, with the KEEP and WIPE rules, lives in `docs/test-standard.md
 | `standard` | `pnpm test:pr`, critical and standard | Same rules. Timeout 30 s. |
 | `e2e` | `pnpm test:e2e`, for a release or a special occasion | Real app, real tools, real build. Timeout 120 s, one at a time, own process cleanup. |
 
-The lint rule `local/test-has-one-tag` fails a test with no tag, two tags or an unknown tag. It reads vitest's form, `{ tags: ['critical'] }`, and Playwright's form, `{ tag: '@critical' }` or `{ tag: ['@e2e'] }`, on `test(...)` and `test.describe(...)`. One test that mixes the two forms has two tags. The rule covers `*.test.*`, `*.spec.*`, `*.e2e.*` and `*.e2e.test.*` files and every file under a `tests` or `e2e` folder.
+The lint rule `local/test-has-one-tag` fails a test with no tag, two tags or an unknown tag. It reads vitest's form, `{ tags: ['critical'] }`, and Playwright's form, `{ tag: '@critical' }` or `{ tag: ['@e2e'] }`, on `test(...)` and `test.describe(...)`. A tag also counts on a describe wrapper named `describe` plus a capital, such as `describeDataset(...)`, and on a conditional suite, `(ready ? describe : describe.skip)(...)`. An annotation call whose last argument is a reason string, such as `test.skip(!ready, 'reason')`, is not a test. One test that mixes the two forms has two tags. The rule covers `*.test.*`, `*.spec.*`, `*.e2e.*` and `*.e2e.test.*` files and every file under a `tests` or `e2e` folder.
 
 ## Commands
 
