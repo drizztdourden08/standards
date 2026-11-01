@@ -43,14 +43,19 @@ const createLock = (file, holder) => {
  * @param {string} file
  * @param {number} pid remove the file only while this pid still owns it
  */
+const unlinkLock = (file) => {
+  try {
+    unlinkSync(file);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 const removeLock = (file, pid) => {
   const current = readLock(file);
   if (current === null || (current && current.pid !== pid)) return;
-  try {
-    unlinkSync(file);
-  } catch {
-    // another process removed it first
-  }
+  unlinkLock(file);
 };
 
 const ageMs = (file) => {
@@ -61,4 +66,4 @@ const ageMs = (file) => {
   }
 };
 
-export { lockPath, readLock, createLock, removeLock, ageMs };
+export { lockPath, readLock, createLock, removeLock, unlinkLock, ageMs };

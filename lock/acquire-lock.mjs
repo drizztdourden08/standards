@@ -1,7 +1,6 @@
 /* @layer tooling-scripts @kind logic */
-import { unlinkSync } from 'node:fs';
 import { isAlive } from './is-alive.mjs';
-import { ageMs, createLock, lockPath, readLock, removeLock } from './lock-file.mjs';
+import { ageMs, createLock, lockPath, readLock, removeLock, unlinkLock } from './lock-file.mjs';
 import { POLL_MS, UNREADABLE_GRACE_MS } from './lock.constants.mjs';
 
 const sleep = (ms) => new Promise((done) => setTimeout(done, ms));
@@ -11,11 +10,7 @@ const isStale = (file, holder, alive) => (holder === undefined ? ageMs(file) > U
 const dropStale = (file, seen) => {
   const again = readLock(file);
   if (again === null || again?.pid !== seen?.pid) return;
-  try {
-    unlinkSync(file);
-  } catch {
-    // another process removed it first
-  }
+  unlinkLock(file);
 };
 
 const attempt = (file, holder, alive) => {
