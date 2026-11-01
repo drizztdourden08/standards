@@ -51,7 +51,9 @@ describe('local/test-has-one-tag (K1 business logic)', { tags: ['critical'] }, (
     const messages = await lint(root, 'a.mjs', `${HEADER}const it = (name) => name;\n\nit('a', 1);\n`);
     expect(messages.filter((message) => message.startsWith('local/test-has-one-tag'))).toEqual([]);
   });
+});
 
+describe('local/test-has-one-tag on Playwright and e2e specs (K1 business logic)', { tags: ['critical'] }, () => {
   it('reads the Playwright tag form on a test and on test.describe', async () => {
     const body = [
       "it('a', { tag: '@critical' }, () => {});",
