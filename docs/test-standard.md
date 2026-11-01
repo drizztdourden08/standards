@@ -1,7 +1,7 @@
 <!-- @layer docs @kind doc -->
 # Test standard
 
-The full standard, with the KEEP and WIPE rules, lives in `docs/test-standard.md` of the shared ai-config repo. This page keeps the tables a repo needs while it works.
+The full standard, with the KEEP and WIPE rules, lives in `docs/test-standard.md` of the shared config repo. This page keeps the tables a repo needs while it works.
 
 ## Three tags, one per test
 

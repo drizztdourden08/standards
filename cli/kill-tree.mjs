@@ -16,7 +16,7 @@ const killTree = (pid) => {
     try {
       process.kill(pid, 'SIGKILL');
     } catch {
-      return;
+      // the process is already gone
     }
   }
 };

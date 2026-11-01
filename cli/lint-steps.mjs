@@ -10,7 +10,7 @@ const STANDARDS_BIN = join(OWN_ROOT, 'bin', 'standards.mjs');
 
 const stylelintPattern = (globs) => {
   const extensions = [...new Set(globs.map((glob) => glob.match(/\.(\w+)$/)?.[1]).filter(Boolean))];
-  return new RegExp(`\.(?:${extensions.join('|')})$`);
+  return new RegExp(`\\.(?:${extensions.join('|')})$`);
 };
 
 const stylelintArgs = (rootDir, targets) => [

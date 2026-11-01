@@ -6,7 +6,7 @@ const WRITING_OFF = { 'local/no-em-dash': 'off', 'local/no-smart-punctuation': '
 export default standardsEslint({
   presets: ['library'],
   ignores: ['tests/fixtures/**'],
-  consoleGlobs: ['bin/**', 'cli/**', 'structure/index.mjs', 'prose/index.mjs', 'sync/index.mjs', 'release-notes/index.mjs', 'tests/**'],
+  consoleGlobs: ['bin/**', 'cli/**', 'structure/index.mjs', 'prose/index.mjs', 'sync/index.mjs', 'release-notes/index.mjs', 'tests/**', 'lock/acquire-lock.mjs', 'lock/run-locked.mjs'],
   defaultExportGlobs: ['cli/knip-hints.mjs', 'presets/*.mjs', 'extensions/*/index.mjs', 'markdownlint/rules.mjs', 'stylelint/rules/no-token-*.mjs'],
   extra: [{ files: ['writing/**', 'markdownlint/rules.mjs', 'tests/**'], rules: WRITING_OFF }],
 });

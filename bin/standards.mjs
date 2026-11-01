@@ -48,7 +48,13 @@ const OPTIONS = {
   help: { type: 'boolean', short: 'h' },
 };
 
+const asksHelp = (args) => args.some((arg) => arg === '--help' || arg === '-h');
+
 const main = async () => {
+  if (WORD_COMMANDS.includes(process.argv[2]) && process.argv[2] !== 'test' && asksHelp(process.argv.slice(3))) {
+    console.log(USAGE);
+    return 0;
+  }
   if (WORD_COMMANDS.includes(process.argv[2])) return (await COMMANDS[process.argv[2]]())({ rootDir: process.cwd(), args: process.argv.slice(3) });
   const { values, positionals } = parseArgs({ args: process.argv.slice(2), options: OPTIONS, allowPositionals: true });
   const [command] = positionals;

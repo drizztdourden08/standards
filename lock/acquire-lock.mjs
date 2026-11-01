@@ -14,7 +14,7 @@ const dropStale = (file, seen) => {
   try {
     unlinkSync(file);
   } catch {
-    return;
+    // another process removed it first
   }
 };
 

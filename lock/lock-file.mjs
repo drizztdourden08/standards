@@ -49,7 +49,7 @@ const removeLock = (file, pid) => {
   try {
     unlinkSync(file);
   } catch {
-    return;
+    // another process removed it first
   }
 };
 
