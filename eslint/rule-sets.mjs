@@ -10,7 +10,7 @@ const DEFAULT_CONSOLE_GLOBS = ['**/bin/**', '**/scripts/**', '**/tooling/**', '*
 const DEFAULT_EXPORT_GLOBS = ['**/*.stories.{ts,tsx}', '**/stylelint-rules/*.mjs', '**/standards.extension.mjs'];
 const NODE_GLOBALS = { process: 'readonly', console: 'readonly', Buffer: 'readonly', URL: 'readonly', fetch: 'readonly', setTimeout: 'readonly', clearTimeout: 'readonly' };
 const SOURCE_FILES = ['**/*.{ts,tsx,js,mjs,cjs,jsx}'];
-const TEST_FILES = ['**/*.{test,spec}.{ts,tsx,js,mjs,cjs,jsx}'];
+const TEST_FILES = ['**/*.{test,spec,e2e}.{ts,tsx,js,mjs,cjs,jsx}', '**/*.e2e.test.{ts,tsx,js,mjs,cjs,jsx}', '**/{tests,e2e}/**/*.{ts,tsx,js,mjs,cjs,jsx}'];
 
 /**
  * @param {string[]} allow

@@ -104,7 +104,7 @@ export default defineStandardsVitest({ test: { include: ['src/**/*.test.ts'] } }
 
 It sets the forks pool, at most 3 workers, the three tags with their timeouts (e2e with `concurrent: false`), `strictTags`, hook and teardown timeouts and `bail: 3`. The `test` keys you pass replace those keys.
 
-Write the tag in the options argument, on the test or on its `describe`: `it('rejects a path outside the root', { tags: ['critical'] }, () => {})`. The lint rule `local/test-has-one-tag` is on for `*.test.*` and `*.spec.*` files and fails a test with no tag, two tags or an unknown tag. `testTags: false` in the ESLint factory turns it off, and `testTags: ['critical', 'standard', 'e2e', 'bench']` changes the names it accepts.
+Write the tag in the options argument, on the test or on its `describe`: `it('rejects a path outside the root', { tags: ['critical'] }, () => {})`. The lint rule `local/test-has-one-tag` is on for `*.test.*`, `*.spec.*`, `*.e2e.*` and `*.e2e.test.*` files and for every file under a `tests` or `e2e` folder. It fails a test with no tag, two tags or an unknown tag. Playwright specs use their own form on `test(...)` and `test.describe(...)`: `{ tag: '@critical' }` or `{ tag: ['@e2e'] }`, with the same one-tag rule. A test that mixes the vitest form and the Playwright form has two tags. `testTags: false` in the ESLint factory turns it off, and `testTags: ['critical', 'standard', 'e2e', 'bench']` changes the names it accepts.
 
 ### Cargo projects
 
