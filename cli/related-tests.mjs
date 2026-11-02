@@ -6,8 +6,6 @@ import { killTree } from './kill-tree.mjs';
 const CHILD = join(import.meta.dirname, 'related-tests-child.mjs');
 
 /**
- * Asks vitest once which test files relate to the files, so a test file
- * that relates to many of them is listed once.
  * @param {{ bin: string, rootDir: string, files: string[], env: NodeJS.ProcessEnv, timeoutMs: number }} job
  * @returns {Promise<{ tests: string[] } | { failure: string }>} absolute test file paths
  */

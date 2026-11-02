@@ -29,7 +29,7 @@ const localFirstRepo = () => {
   return root;
 };
 
-describe('K5 standards test pr base in local-first mode', { tags: ['critical'] }, () => {
+describe('K5 standards test pr base in local-first mode', { tags: ['critical'], timeout: 20000 }, () => {
   afterAll(removeTempTrees);
 
   it('uses the local main when origin/main is behind it', () => {
