@@ -78,6 +78,7 @@ const runTest = async (ctx) => {
   const configured = loadStandards({ rootDir }).options.test ?? {};
   const timeoutMs = configured.timeouts?.[mode] ?? TEST_TIMEOUTS_MS[mode];
   const job = { rootDir, mode, base, given: given.files, passthrough, timeoutMs };
+  if (mode === 'e2e') return runVitest(job, process.env);
   return withHeavyLock({ root: rootDir, command: `standards test ${mode}` }, (env) => runVitest(job, env));
 };
 

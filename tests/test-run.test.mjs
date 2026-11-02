@@ -9,7 +9,8 @@ vi.mock('../cli/changed-files.mjs', () => ({ changedFiles: vi.fn() }));
 vi.mock('../cli/related-tests.mjs', () => ({ relatedTests: vi.fn() }));
 vi.mock('../cli/run-timed.mjs', () => ({ runTimed: vi.fn() }));
 vi.mock('../cli/bin-of.mjs', () => ({ binOf: () => '/vitest.mjs' }));
-vi.mock('../lock/with-lock.mjs', () => ({ withHeavyLock: (_job, run) => run({}) }));
+const locked = vi.hoisted(() => []);
+vi.mock('../lock/with-lock.mjs', () => ({ withHeavyLock: (job, run) => (locked.push(job.command), run({})) }));
 vi.mock('../config/load.mjs', () => ({ loadStandards: () => ({ options: {} }), OWN_ROOT: '/own' }));
 
 const longTests = Array.from({ length: 3 }, (_, index) => `/${String(index).repeat(11000)}.test.mjs`);
@@ -87,5 +88,26 @@ describe('standards test --help (K2 public contract)', { tags: ['critical'] }, (
     expect(changedFiles).not.toHaveBeenCalled();
     expect(relatedTests).not.toHaveBeenCalled();
     expect(runTimed).not.toHaveBeenCalled();
+  });
+});
+
+describe('standards test lock slots (e2e takes none)', { tags: ['critical'] }, () => {
+  beforeEach(() => {
+    quietReset();
+    locked.length = 0;
+    vi.mocked(changedFiles).mockReturnValue({ files: ['a.ts'], base: 'abc', ref: 'main' });
+    vi.mocked(relatedTests).mockResolvedValue({ tests: ['/x.test.mjs'] });
+    vi.mocked(runTimed).mockResolvedValue({ code: 0, timedOut: false });
+  });
+
+  it('runs the e2e mode without taking a slot', async () => {
+    expect(await runTest({ rootDir: process.cwd(), args: ['e2e'] })).toBe(0);
+    expect(locked).toEqual([]);
+    expect(runTimed).toHaveBeenCalled();
+  });
+
+  it.each(['changed', 'pr'])('runs the %s mode under a slot', async (mode) => {
+    expect(await runTest({ rootDir: process.cwd(), args: [mode] })).toBe(0);
+    expect(locked).toEqual([`standards test ${mode}`]);
   });
 });

@@ -4,11 +4,20 @@ import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { LOCK_DIR_ENV, LOCK_FILE_NAME } from './lock.constants.mjs';
 
+const lockDir = (env) => env[LOCK_DIR_ENV] ?? join(homedir(), '.coord', 'locks');
+
 /**
  * @param {NodeJS.ProcessEnv} [env]
- * @returns {string}
+ * @param {number} [slot] slot index, from 0
+ * @returns {string} the file of one slot: heavy-check.<slot>.lock
  */
-const lockPath = (env = process.env) => join(env[LOCK_DIR_ENV] ?? join(homedir(), '.coord', 'locks'), LOCK_FILE_NAME);
+const lockPath = (env = process.env, slot = 0) => join(lockDir(env), `heavy-check.${slot}.lock`);
+
+/**
+ * @param {NodeJS.ProcessEnv} [env]
+ * @returns {string} the single heavy-check.lock of an older standards version
+ */
+const legacyLockPath = (env = process.env) => join(lockDir(env), LOCK_FILE_NAME);
 
 /**
  * @param {string} file
@@ -66,4 +75,4 @@ const ageMs = (file) => {
   }
 };
 
-export { lockPath, readLock, createLock, removeLock, unlinkLock, ageMs };
+export { lockPath, legacyLockPath, readLock, createLock, removeLock, unlinkLock, ageMs };

@@ -10,7 +10,7 @@ const TEST_USAGE = `standards test [changed|pr|e2e] [files] [--base <ref>] [--ro
   Runs the tests related to the files changed against the base branch, filtered by tag:
   changed = critical, pr = critical and standard, e2e = e2e. Each test file runs once.
   Files given on the command line replace the changed set. Put them before the vitest args.
-  One heavy check at a time, hard timeout.
+  changed and pr take a heavy check slot, e2e takes none. Hard timeout.
 
 Options:
   --base <ref>         compare with this ref instead of the default branch

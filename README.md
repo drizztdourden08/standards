@@ -85,9 +85,11 @@ The code lint never runs a big repo in one process. `--all` lists the tracked an
 
 ### One heavy check at a time
 
-Lint, test and `standards run-locked` take one lock for the whole machine, so two projects never build, lint and test at once. The lock is the file `~/.coord/locks/heavy-check.lock`, holding the pid, project root, command and start time of the holder (`STANDARDS_LOCK_DIR` names another folder). A run that finds a live holder waits. It prints a line naming the holder and how long it has held the lock, again each minute, and one line when it gets the lock. After 300 s it gives up with an error naming the holder (`STANDARDS_LOCK_WAIT_S` sets another limit). A lock whose pid is dead is stale and is taken over. The lock is released when the run ends, on SIGINT, SIGTERM and SIGHUP, and on timeout. A run started inside a locked run sees `STANDARDS_LOCK_HOLDER=<pid>` in its environment and does not wait on itself.
+Lint, the test modes `changed` and `pr`, and `standards run-locked` share a few lock slots for the whole machine, so a crowd of projects never builds, lints and tests at once. The slots are the files `~/.coord/locks/heavy-check.0.lock`, `heavy-check.1.lock` and `heavy-check.2.lock` (`STANDARDS_LOCK_DIR` names another folder). `STANDARDS_LOCK_SLOTS` sets the count; it takes an integer of 1 or more and any other value means 3. A run takes the first free slot. The slot file holds the pid, project root, command and start time of the holder, and the slot it holds, such as `slot 1 of 3`. When every slot has a live holder the run waits. It prints a line naming each holder (slot, pid, job and how long it has held the slot), again each minute, and one line when it gets a slot. After 1800 s it gives up with an error naming every holder (`STANDARDS_LOCK_WAIT_S` sets another limit). A slot whose pid is dead is stale and is taken over, slot by slot. A `heavy-check.lock` left by an older standards version counts as one more holder while its pid is alive, and is ignored otherwise. A slot is released when the run ends, on SIGINT, SIGTERM and SIGHUP, and on timeout. A run started inside a locked run sees `STANDARDS_LOCK_HOLDER=<pid>` in its environment and does not wait on itself.
 
-A project locks its build the same way: `"build": "standards run-locked -- vite build"`. Code reaches the same lock through `@drizztdourden08/standards/lock` (`withHeavyLock`, `acquireLock`, `runLocked`, `lockPath`).
+`standards test e2e` and app launches take no slot, so they never queue behind a lint.
+
+A project locks its build the same way: `"build": "standards run-locked -- vite build"`. Code reaches the same lock through `@drizztdourden08/standards/lock` (`withHeavyLock`, `acquireLock`, `runLocked`, `lockPath`, `legacyLockPath`, `slotCount`, `waitLimitMs`).
 
 ### Tests and tags
 
@@ -113,7 +115,7 @@ Write the tag in the options argument, on the test or on its `describe`: `it('re
 
 ### Cargo projects
 
-The tags are vitest's, so a Rust crate maps them to cargo: `cargo test` runs critical and standard, and an e2e test is marked `#[ignore]` or put behind a cargo feature. `cargo test -- --ignored` or `cargo test --features e2e` runs e2e. Wrap the cargo scripts in `standards run-locked -- cargo test` so they share the lock.
+The tags are vitest's, so a Rust crate maps them to cargo: `cargo test` runs critical and standard, and an e2e test is marked `#[ignore]` or put behind a cargo feature. `cargo test -- --ignored` or `cargo test --features e2e` runs e2e. Wrap the cargo scripts for critical and standard tests in `standards run-locked -- cargo test` so they share the slots. Leave the e2e run unwrapped.
 
 ### The script block
 
