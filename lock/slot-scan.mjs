@@ -2,7 +2,9 @@
 import { ageMs, legacyLockPath, lockPath, readLock, unlinkLock } from './lock-file.mjs';
 import { UNREADABLE_GRACE_MS } from './lock.constants.mjs';
 
-const isStale = (file, holder, alive) => (holder === undefined ? ageMs(file) > UNREADABLE_GRACE_MS : !alive(holder.pid));
+const beganAt = (holder) => Date.parse(holder.processStartedAt ?? holder.startedAt);
+
+const isStale = (file, holder, alive) => (holder === undefined ? ageMs(file) > UNREADABLE_GRACE_MS : !alive(holder.pid, beganAt(holder)));
 
 const dropStale = (file, seen) => {
   const again = readLock(file);
@@ -20,11 +22,11 @@ const inspect = (file, alive) => {
 
 const legacyHolder = (env, alive) => {
   const current = readLock(legacyLockPath(env));
-  return current && alive(current.pid) ? { slot: 'legacy heavy-check.lock', holder: current } : undefined;
+  return current && alive(current.pid, beganAt(current)) ? { slot: 'legacy heavy-check.lock', holder: current } : undefined;
 };
 
 /**
- * @param {{ env: NodeJS.ProcessEnv, slots: number, alive: (pid: number) => boolean }} scan
+ * @param {{ env: NodeJS.ProcessEnv, slots: number, alive: (pid: number, since?: number) => boolean }} scan
  * @returns {{ free: number[], busy: { slot: string, holder?: object }[] }} free slots and live holders, legacy lock included
  */
 const scanSlots = ({ env, slots, alive }) => {

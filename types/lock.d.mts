@@ -4,6 +4,7 @@ export interface LockHolder {
   root: string;
   command: string;
   startedAt: string;
+  processStartedAt?: string;
 }
 
 export interface LockJob {
@@ -16,7 +17,7 @@ export interface LockJob {
 }
 
 /** takes the machine-wide heavy check lock, taking the first free slot of STANDARDS_LOCK_SLOTS (3 by default) and waiting its turn up to waitMs (STANDARDS_LOCK_WAIT_S, 1800 s by default); the returned function releases it */
-export function acquireLock(job: LockJob & { alive?: (pid: number) => boolean }): Promise<() => void>;
+export function acquireLock(job: LockJob & { alive?: (pid: number, since?: number) => boolean }): Promise<() => void>;
 
 /** runs the job under the lock; the job gets the env that marks this process as the holder */
 export function withHeavyLock<T>(options: LockJob, job: (env: NodeJS.ProcessEnv) => Promise<T>): Promise<T>;
@@ -24,7 +25,8 @@ export function withHeavyLock<T>(options: LockJob, job: (env: NodeJS.ProcessEnv)
 /** runs a command under the lock, with a timeout; resolves to its exit code */
 export function runLocked(ctx: { rootDir: string; args: string[]; timeoutMs?: number }): Promise<number>;
 
-export function isAlive(pid: number): boolean;
+/** true when the pid is a live process; with since (epoch ms), also when it began by then, so a later process that reused the pid counts as dead */
+export function isAlive(pid: number, since?: number): boolean;
 
 /** the file of one slot, heavy-check.<slot>.lock */
 export function lockPath(env?: NodeJS.ProcessEnv, slot?: number): string;

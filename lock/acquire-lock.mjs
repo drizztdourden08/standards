@@ -26,11 +26,12 @@ const waitStep = (wait, busy) => {
 };
 
 /**
- * @param {{ root: string, command: string, env?: NodeJS.ProcessEnv, pollMs?: number, waitMs?: number, alive?: (pid: number) => boolean, log?: (line: string) => void }} job
+ * @param {{ root: string, command: string, env?: NodeJS.ProcessEnv, pollMs?: number, waitMs?: number, alive?: (pid: number, since?: number) => boolean, log?: (line: string) => void }} job
  * @returns {Promise<() => void>} rejects once the wait passes waitMs
  */
 const acquireLock = async ({ root, command, env = process.env, pollMs = POLL_MS, alive = isAlive, log = console.error, waitMs = waitLimitMs(env) }) => {
-  const holder = { pid: process.pid, root, command, startedAt: new Date().toISOString() };
+  const processStartedAt = new Date(Date.now() - process.uptime() * 1000).toISOString();
+  const holder = { pid: process.pid, root, command, startedAt: new Date().toISOString(), processStartedAt };
   const scan = { env, alive, holder, slots: slotCount(env) };
   const wait = { started: Date.now(), limitMs: waitMs, lastLine: 0, log };
   let result = attempt(scan);
