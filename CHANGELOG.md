@@ -1,5 +1,11 @@
 # @drizztdourden08/standards
 
+## 0.14.5
+
+### Patch Changes
+
+- d84530e: `standards test` resolves the related test files first and runs each one once, takes files on the command line in place of the changed set, and prints its usage for `--help` before any git or vitest work.
+
 ## 0.14.4
 
 ### Patch Changes
