@@ -14,13 +14,16 @@ vi.mock('../config/load.mjs', () => ({ loadStandards: () => ({ options: {} }), O
 
 const longTests = Array.from({ length: 3 }, (_, index) => `/${String(index).repeat(11000)}.test.mjs`);
 const ranTests = () => vi.mocked(runTimed).mock.calls.flatMap(([job]) => job.args.filter((arg) => arg.endsWith('.test.mjs')));
+const quietReset = () => {
+  vi.resetAllMocks();
+  vi.spyOn(console, 'log').mockImplementation(() => undefined);
+  vi.spyOn(console, 'error').mockImplementation(() => undefined);
+};
 const exitCodes = (...codes) => codes.forEach((code) => vi.mocked(runTimed).mockResolvedValueOnce({ code, timedOut: false }));
 
 describe('standards test runs each test file once (K5 regression)', { tags: ['critical'] }, () => {
   beforeEach(() => {
-    vi.resetAllMocks();
-    vi.spyOn(console, 'log').mockImplementation(() => undefined);
-    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    quietReset();
     vi.mocked(changedFiles).mockReturnValue({ files: ['a.ts', 'b.ts', 'c.ts'], base: 'abc', ref: 'main' });
     vi.mocked(relatedTests).mockResolvedValue({ tests: longTests });
   });
@@ -54,9 +57,7 @@ describe('standards test runs each test file once (K5 regression)', { tags: ['cr
 
 describe('standards test with file arguments (K2 public contract)', { tags: ['critical'] }, () => {
   beforeEach(() => {
-    vi.resetAllMocks();
-    vi.spyOn(console, 'log').mockImplementation(() => undefined);
-    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    quietReset();
     vi.mocked(relatedTests).mockResolvedValue({ tests: ['/x.test.mjs'] });
     vi.mocked(runTimed).mockResolvedValue({ code: 0, timedOut: false });
   });
