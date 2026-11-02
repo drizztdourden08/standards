@@ -25,7 +25,7 @@ const legacyHolder = (env, alive) => {
 
 /**
  * @param {{ env: NodeJS.ProcessEnv, slots: number, alive: (pid: number) => boolean }} scan
- * @returns {{ free: number[], busy: { slot: string, holder?: object }[] }} the free slot indexes and the live holders, a live legacy lock included
+ * @returns {{ free: number[], busy: { slot: string, holder?: object }[] }} free slots and live holders, legacy lock included
  */
 const scanSlots = ({ env, slots, alive }) => {
   const free = [];

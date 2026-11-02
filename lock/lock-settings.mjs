@@ -3,7 +3,7 @@ import { DEFAULT_SLOTS, DEFAULT_WAIT_S, LOCK_SLOTS_ENV, LOCK_WAIT_ENV } from './
 
 /**
  * @param {NodeJS.ProcessEnv} [env]
- * @returns {number} the slot count, 3 unless STANDARDS_LOCK_SLOTS is an integer of 1 or more
+ * @returns {number} STANDARDS_LOCK_SLOTS, else 3
  */
 const slotCount = (env = process.env) => {
   const raw = String(env[LOCK_SLOTS_ENV] ?? '').trim();
@@ -13,7 +13,7 @@ const slotCount = (env = process.env) => {
 
 /**
  * @param {NodeJS.ProcessEnv} [env]
- * @returns {number} the wait limit in ms, 1800 s unless STANDARDS_LOCK_WAIT_S is a positive number
+ * @returns {number} ms: STANDARDS_LOCK_WAIT_S, else 1800 s
  */
 const waitLimitMs = (env = process.env) => {
   const seconds = Number(env[LOCK_WAIT_ENV]);
