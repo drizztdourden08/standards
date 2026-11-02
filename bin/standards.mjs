@@ -8,9 +8,10 @@ const USAGE = `standards <command> [--root <dir>]
   lint [--all] [--base <ref>]
                        typecheck, eslint, stylelint, prose, knip and jscpd; only the files changed against the base
                        branch by default, --all for everything (knip runs with --all only)
-  test [changed|pr|e2e] [--base <ref>] [vitest args]
-                       the tests related to the files changed against the base: changed = critical, pr = critical
-                       and standard, e2e = e2e; one heavy check at a time, hard timeout
+  test [changed|pr|e2e] [files] [--base <ref>] [vitest args]
+                       the tests related to the files changed against the base, or to the files given: changed =
+                       critical, pr = critical and standard, e2e = e2e; each test file runs once; one heavy check
+                       at a time, hard timeout
   run-locked -- <cmd>  run a command under the machine-wide heavy check lock (~/.coord/locks)
   structure [--check]  the folder standard: package names, barrels, folder names, depth, component and module shapes
   prose                the writing gate over every tracked text file the other linters skip

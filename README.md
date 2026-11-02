@@ -41,8 +41,9 @@ Each factory returns its config synchronously, so a config file default-exports 
 standards lint [--all] [--base <ref>]
                                typecheck, eslint, stylelint, prose, knip and jscpd; every step runs, the failures are
                                listed at the end. Only the files changed against the base by default, --all for everything
-standards test [changed|pr|e2e] [--base <ref>]
-                               the tests related to the files changed against the base, by tag (see Lint and test)
+standards test [changed|pr|e2e] [files] [--base <ref>]
+                               the tests related to the files changed against the base, by tag (see Lint and test);
+                               files given on the command line replace the changed set; each test file runs once
 standards run-locked -- <cmd>  a command under the machine-wide heavy check lock, with a hard timeout
 standards structure [--check]  package names, barrels, folder names, depth, component and module folder shapes
 standards prose                the writing gate over every tracked text file the other linters skip

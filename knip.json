@@ -1,6 +1,6 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "entry": ["stylelint/rules/*.mjs", "presets/*.mjs", "tests/**/*.test.mjs"],
+  "entry": ["stylelint/rules/*.mjs", "presets/*.mjs", "tests/**/*.test.mjs", "cli/related-tests-child.mjs"],
   "project": ["**/*.mjs"],
   "ignoreDependencies": ["stylelint-config-standard"],
   "ignoreBinaries": ["standards"]

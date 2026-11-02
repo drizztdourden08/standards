@@ -21,7 +21,7 @@ The lint rule `local/test-has-one-tag` fails a test with no tag, two tags or an 
 | `pnpm test:pr` | `standards test pr`: critical and standard, related to the changes |
 | `pnpm test:e2e` | `standards test e2e`: e2e, related to the changes |
 
-No mode runs the whole project. `--base <ref>` moves the base, so a release passes the last release tag. `templates/package-scripts.json` holds the script block.
+No mode runs the whole project. Files given on the command line (`pnpm test src/a.ts`, before any vitest option) replace the changed set, and the tags of the mode still filter. A test file related to many changed files runs once. `--base <ref>` moves the base, so a release passes the last release tag. `templates/package-scripts.json` holds the script block.
 
 ## A test is written only for one of these
 

@@ -5,12 +5,12 @@ import { TEST_BATCH_CHARS, TEST_MODES } from './run.constants.mjs';
 const TAG_FILTERS = { changed: 'critical', pr: 'critical||standard', e2e: 'e2e' };
 
 /**
- * @param {{ mode?: string, files: string[], passthrough?: string[] }} job
+ * @param {{ mode?: string, files: string[], passthrough?: string[] }} job files are test files
  * @returns {string[]} the vitest arguments
  */
 const testArgs = ({ mode = 'changed', files, passthrough = [] }) => {
   if (!TEST_MODES.includes(mode)) throw new Error(`unknown test mode "${mode}" (${TEST_MODES.join(', ')})`);
-  return ['related', ...files, '--run', '--tags-filter', TAG_FILTERS[mode], '--passWithNoTests', ...passthrough];
+  return ['run', ...files, '--tags-filter', TAG_FILTERS[mode], '--passWithNoTests', ...passthrough];
 };
 
 /**
