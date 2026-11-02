@@ -1,5 +1,11 @@
 # @drizztdourden08/standards
 
+## 0.14.6
+
+### Patch Changes
+
+- 98202ef: The heavy check lock has slots: `heavy-check.0.lock` to `heavy-check.2.lock`, a caller takes the first free one, `STANDARDS_LOCK_SLOTS` sets the count (3 by default), the wait is 1800 s, and the gave up error names every holder. A live `heavy-check.lock` of an older version counts as one holder. `standards test e2e` no longer takes a slot.
+
 ## 0.14.5
 
 ### Patch Changes
