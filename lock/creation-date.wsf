@@ -1,8 +1,0 @@
-<job>
-<script language="JScript">
-var pid = WScript.Arguments(0);
-var rows = GetObject('winmgmts:\\\\.\\root\\cimv2').ExecQuery('Select CreationDate from Win32_Process Where ProcessId=' + pid);
-var found = new Enumerator(rows);
-if (!found.atEnd()) WScript.Echo(found.item().CreationDate);
-</script>
-</job>

@@ -1,10 +1,12 @@
 /* @layer tooling-scripts @kind logic */
 import { ageMs, legacyLockPath, lockPath, readLock, unlinkLock } from './lock-file.mjs';
-import { UNREADABLE_GRACE_MS } from './lock.constants.mjs';
+import { HEARTBEAT_STALE_MS, UNREADABLE_GRACE_MS } from './lock.constants.mjs';
 
-const beganAt = (holder) => Date.parse(holder.processStartedAt ?? holder.startedAt);
+const beating = (file, holder) => holder.heartbeat !== true || ageMs(file) < HEARTBEAT_STALE_MS;
 
-const isStale = (file, holder, alive) => (holder === undefined ? ageMs(file) > UNREADABLE_GRACE_MS : !alive(holder.pid, beganAt(holder)));
+const holderAlive = (file, holder, alive) => alive(holder.pid) && beating(file, holder);
+
+const isStale = (file, holder, alive) => (holder === undefined ? ageMs(file) > UNREADABLE_GRACE_MS : !holderAlive(file, holder, alive));
 
 const dropStale = (file, seen) => {
   const again = readLock(file);
@@ -21,12 +23,13 @@ const inspect = (file, alive) => {
 };
 
 const legacyHolder = (env, alive) => {
-  const current = readLock(legacyLockPath(env));
-  return current && alive(current.pid, beganAt(current)) ? { slot: 'legacy heavy-check.lock', holder: current } : undefined;
+  const file = legacyLockPath(env);
+  const current = readLock(file);
+  return current && holderAlive(file, current, alive) ? { slot: 'legacy heavy-check.lock', holder: current } : undefined;
 };
 
 /**
- * @param {{ env: NodeJS.ProcessEnv, slots: number, alive: (pid: number, since?: number) => boolean }} scan
+ * @param {{ env: NodeJS.ProcessEnv, slots: number, alive: (pid: number) => boolean }} scan
  * @returns {{ free: number[], busy: { slot: string, holder?: object }[] }} free slots and live holders, legacy lock included
  */
 const scanSlots = ({ env, slots, alive }) => {

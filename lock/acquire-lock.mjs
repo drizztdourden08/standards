@@ -1,5 +1,6 @@
 /* @layer tooling-scripts @kind logic */
 import { holdersText } from './holder-text.mjs';
+import { startHeartbeat } from './heartbeat.mjs';
 import { isAlive } from './is-alive.mjs';
 import { createLock, lockPath, removeLock } from './lock-file.mjs';
 import { LOCK_WAIT_ENV, POLL_MS, REMIND_MS } from './lock.constants.mjs';
@@ -26,12 +27,11 @@ const waitStep = (wait, busy) => {
 };
 
 /**
- * @param {{ root: string, command: string, env?: NodeJS.ProcessEnv, pollMs?: number, waitMs?: number, alive?: (pid: number, since?: number) => boolean, log?: (line: string) => void }} job
+ * @param {{ root: string, command: string, env?: NodeJS.ProcessEnv, pollMs?: number, waitMs?: number, alive?: (pid: number) => boolean, log?: (line: string) => void }} job
  * @returns {Promise<() => void>} rejects once the wait passes waitMs
  */
 const acquireLock = async ({ root, command, env = process.env, pollMs = POLL_MS, alive = isAlive, log = console.error, waitMs = waitLimitMs(env) }) => {
-  const processStartedAt = new Date(Date.now() - process.uptime() * 1000).toISOString();
-  const holder = { pid: process.pid, root, command, startedAt: new Date().toISOString(), processStartedAt };
+  const holder = { pid: process.pid, root, command, startedAt: new Date().toISOString(), heartbeat: true };
   const scan = { env, alive, holder, slots: slotCount(env) };
   const wait = { started: Date.now(), limitMs: waitMs, lastLine: 0, log };
   let result = attempt(scan);
@@ -43,7 +43,11 @@ const acquireLock = async ({ root, command, env = process.env, pollMs = POLL_MS,
     result = attempt(scan);
   }
   if (wait.lastLine) log(`standards: heavy check lock acquired after ${Math.round((Date.now() - wait.started) / 1000)}s`);
-  return () => removeLock(result.taken, process.pid);
+  const stopBeat = startHeartbeat(result.taken);
+  return () => {
+    stopBeat();
+    removeLock(result.taken, process.pid);
+  };
 };
 
 export { acquireLock };
