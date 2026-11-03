@@ -19,6 +19,10 @@ Options:
 
 const BASE_ENV ='STANDARDS_BASE';
 const BASE_REFS = ['main', 'master', 'origin/main', 'origin/master'];
+const DEFAULT_BASE_BRANCH = 'main';
+const BASE_BRANCH_ENV = 'GITHUB_BASE_REF';
+const DEEPEN_STEP = 200;
+const MAX_DEEPEN_ATTEMPTS = 5;
 const MAX_CHANGED_FILES = 400;
 const WHOLE_TREE_FILES = /(^|\/)(?:eslint\.config\.[cm]?[jt]s|stylelint\.config\.[cm]?[jt]s|\.stylelintrc[^/]*|tsconfig[^/]*\.json|standards\.config\.[cm]?[jt]s|package\.json|pnpm-lock\.yaml|\.jscpd\.json|knip\.json)$/;
 const MAX_BATCH_FILES = 1000;
@@ -29,4 +33,4 @@ const HEAP_ENV = 'STANDARDS_LINT_HEAP_MB';
 const ESLINT_FILES = /\.(?:[cm]?[jt]sx?)$/;
 const JSCPD_FILES = /\.(?:[cm]?[jt]sx?|css)$/;
 
-export { LINT_TIMEOUTS_MS, TEST_TIMEOUTS_MS, TEST_MODES, TEST_USAGE, BASE_ENV, BASE_REFS, MAX_CHANGED_FILES, WHOLE_TREE_FILES, ESLINT_FILES, JSCPD_FILES, MAX_BATCH_FILES, MAX_BATCH_CHARS, TEST_BATCH_CHARS, HEAP_DEFAULT_MB, HEAP_ENV };
+export { LINT_TIMEOUTS_MS, TEST_TIMEOUTS_MS, TEST_MODES, TEST_USAGE, BASE_ENV, BASE_REFS, DEFAULT_BASE_BRANCH, BASE_BRANCH_ENV, DEEPEN_STEP, MAX_DEEPEN_ATTEMPTS, MAX_CHANGED_FILES, WHOLE_TREE_FILES, ESLINT_FILES, JSCPD_FILES, MAX_BATCH_FILES, MAX_BATCH_CHARS, TEST_BATCH_CHARS, HEAP_DEFAULT_MB, HEAP_ENV };

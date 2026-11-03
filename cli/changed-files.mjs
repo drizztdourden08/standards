@@ -2,6 +2,7 @@
 import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { deepenUntil, fetchBase } from './base-fetch.mjs';
 import { BASE_ENV, BASE_REFS } from './run.constants.mjs';
 
 const git = (cwd, args) => {
@@ -19,6 +20,8 @@ const localHead = (cwd, remoteHead) => {
   return git(cwd, ['merge-base', '--is-ancestor', remoteHead, `refs/heads/${name}`]) === null ? undefined : name;
 };
 
+const why = (reason) => (reason ? `; fetch failed: ${reason}` : '');
+
 const baseRef = (cwd, env) => {
   if (env[BASE_ENV]) return knownRef(cwd, env[BASE_ENV]) ? env[BASE_ENV] : undefined;
   const remoteHead = git(cwd, ['symbolic-ref', '--short', 'refs/remotes/origin/HEAD']);
@@ -32,10 +35,15 @@ const baseRef = (cwd, env) => {
  */
 const changedFiles = (cwd, env = process.env) => {
   if (git(cwd, ['rev-parse', '--is-inside-work-tree']) !== 'true') return { failure: 'not a git work tree' };
-  const ref = baseRef(cwd, env);
-  if (!ref) return { failure: `no default branch found (${BASE_REFS.join(', ')})` };
-  const base = git(cwd, ['merge-base', 'HEAD', ref]);
-  if (!base) return { failure: `no merge base with ${ref}` };
+  let ref = baseRef(cwd, env);
+  let fetchReason;
+  if (!ref) {
+    fetchReason = fetchBase(cwd, env);
+    ref = baseRef(cwd, env);
+  }
+  if (!ref) return { failure: `no default branch found (${BASE_REFS.join(', ')})${why(fetchReason)}` };
+  const { value: base, reason } = deepenUntil(cwd, () => git(cwd, ['merge-base', 'HEAD', ref]));
+  if (!base) return { failure: `no merge base with ${ref}${why(reason)}` };
   const tracked = lines(git(cwd, ['diff', '--name-only', '--diff-filter=ACMR', '--relative', base]));
   const untracked = lines(git(cwd, ['ls-files', '--others', '--exclude-standard']));
   const files = [...new Set([...tracked, ...untracked])].filter((file) => existsSync(join(cwd, file))).sort();

@@ -2,6 +2,7 @@
 import { execFileSync } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { afterAll, describe, expect, it } from 'vitest';
 import { changedFiles } from '../cli/changed-files.mjs';
 import { testBatches } from '../cli/test-modes.mjs';
@@ -51,6 +52,39 @@ describe('K5 standards test pr base in local-first mode', { tags: ['critical'], 
     run(root, 'update-ref', 'refs/remotes/origin/main', 'HEAD');
     run(root, 'checkout', '-q', 'feature');
     expect(changedFiles(root, {}).ref).toBe('origin/main');
+  });
+});
+
+describe('K5 standards test pr base in a shallow clone', { tags: ['critical'], timeout: 30000 }, () => {
+  afterAll(removeTempTrees);
+
+  const shallowClone = () => {
+    const origin = gitTree({ 'a.txt': 'a
+' });
+    run(origin, 'symbolic-ref', 'HEAD', 'refs/heads/main');
+    run(origin, 'add', '-A');
+    run(origin, 'commit', '-q', '-m', 'first');
+    commitFile(origin, 'base-1.txt');
+    run(origin, 'checkout', '-q', '-b', 'feature');
+    commitFile(origin, 'mine.txt');
+    const clone = gitTree({});
+    run(clone, 'clone', '-q', '--depth', '1', '--branch', 'feature', pathToFileURL(origin).href, 'work');
+    return { origin, work: join(clone, 'work') };
+  };
+
+  it('fetches the base branch and deepens until a merge base exists', () => {
+    const { work } = shallowClone();
+    const found = changedFiles(work, { GITHUB_BASE_REF: 'main' });
+    expect(found.ref).toBe('origin/main');
+    expect(found.files).toEqual(['mine.txt']);
+  });
+
+  it('keeps the failure and adds the fetch reason when origin cannot be reached', () => {
+    const { origin, work } = shallowClone();
+    run(work, 'remote', 'set-url', 'origin', pathToFileURL(join(origin, 'missing')).href);
+    const found = changedFiles(work, { GITHUB_BASE_REF: 'main' });
+    expect(found.failure).toContain('no default branch found');
+    expect(found.failure).toContain('fetch failed');
   });
 });
 
