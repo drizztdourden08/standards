@@ -59,8 +59,7 @@ describe('K5 standards test pr base in a shallow clone', { tags: ['critical'], t
   afterAll(removeTempTrees);
 
   const shallowClone = () => {
-    const origin = gitTree({ 'a.txt': 'a
-' });
+    const origin = gitTree({ 'a.txt': 'a\n' });
     run(origin, 'symbolic-ref', 'HEAD', 'refs/heads/main');
     run(origin, 'add', '-A');
     run(origin, 'commit', '-q', '-m', 'first');

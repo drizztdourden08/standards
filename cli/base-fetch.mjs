@@ -11,7 +11,6 @@ const attempt = (cwd, args) => {
 const baseBranch = (env) => (env[BASE_ENV] || env[BASE_BRANCH_ENV] || DEFAULT_BASE_BRANCH).replace(/^(?:refs\/heads\/|origin\/)/, '');
 
 /**
- * Fetches the base branch into refs/remotes/origin, for a shallow clone that has no base ref.
  * @param {string} cwd
  * @param {NodeJS.ProcessEnv} env
  * @returns {string | undefined} why the fetch failed
@@ -22,7 +21,6 @@ const fetchBase = (cwd, env) => {
 };
 
 /**
- * Deepens a shallow clone until the probe finds a value, at most MAX_DEEPEN_ATTEMPTS fetches.
  * @template T
  * @param {string} cwd
  * @param {() => T | null} probe
