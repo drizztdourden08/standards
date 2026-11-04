@@ -8,7 +8,7 @@ import { changedFiles } from '../cli/changed-files.mjs';
 import { testBatches } from '../cli/test-modes.mjs';
 import { gitTree, removeTempTrees } from './temp-tree.mjs';
 
-const run = (cwd, ...args) => execFileSync('git', ['-c', 'user.name=t', '-c', 'user.email=t@t', '-c', 'commit.gpgsign=false', ...args], { cwd, encoding: 'utf8' }).trim();
+const run = (cwd, ...args) => execFileSync('git', ['-c', 'user.name=t', '-c', 'user.email=t@t', '-c', 'commit.gpgsign=false', ...args], { cwd, encoding: 'utf8', windowsHide: true }).trim();
 
 const commitFile = (root, file) => {
   writeFileSync(join(root, file), `${file}\n`);

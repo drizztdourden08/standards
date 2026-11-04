@@ -65,7 +65,7 @@ const runDraft = (rootDir, version) => {
 
 const runVersion = (rootDir) => {
   const before = releaseVersionOf(rootDir, noteRulesFor(rootDir).packageName);
-  execSync(process.env[VERSION_COMMAND_ENV] || DEFAULT_VERSION_COMMAND, { cwd: rootDir, stdio: 'inherit' });
+  execSync(process.env[VERSION_COMMAND_ENV] || DEFAULT_VERSION_COMMAND, { cwd: rootDir, stdio: 'inherit', windowsHide: true });
   const after = releaseVersionOf(rootDir, noteRulesFor(rootDir).packageName);
   if (after === before) { console.log(`release notes: still v${after}, nothing to draft.`); return 0; }
   return runDraft(rootDir, after);

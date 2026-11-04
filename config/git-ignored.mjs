@@ -17,6 +17,7 @@ const fromGit = (rootDir) => {
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'ignore'],
       maxBuffer: 64 * 1024 * 1024,
+      windowsHide: true,
     });
     return out.split('\0').filter(Boolean).map(globOfPath);
   } catch {

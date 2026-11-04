@@ -16,7 +16,7 @@ const isSkippedDir = (name) => SKIP_DIRS.has(name) || name.startsWith('.');
 
 const gitFiles = (rootDir) => {
   try {
-    const out = execFileSync('git', ['ls-files', '-co', '--exclude-standard', '-z'], { cwd: rootDir, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 64 * 1024 * 1024 });
+    const out = execFileSync('git', ['ls-files', '-co', '--exclude-standard', '-z'], { cwd: rootDir, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 64 * 1024 * 1024, windowsHide: true });
     return out.split('\0').filter((file) => file && existsSync(join(rootDir, file)));
   } catch {
     return null;

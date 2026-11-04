@@ -17,6 +17,7 @@ import { cssBesideComponent } from './rules/css-beside-component.mjs';
 import { noCrossPackageRelative, noDeepPackageImport, noGenericFolderNames } from './rules/boundaries.mjs';
 import { fileHeader } from './rules/file-header.mjs';
 import { testHasOneTag } from './rules/test-has-one-tag.mjs';
+import { spawnHidesWindow } from './rules/spawn-hides-window.mjs';
 
 const LOCAL_RULES = {
   'no-raw-html': noRawHtml,
@@ -42,6 +43,7 @@ const LOCAL_RULES = {
   'no-generic-folder-names': noGenericFolderNames,
   'file-header': fileHeader,
   'test-has-one-tag': testHasOneTag,
+  'spawn-hides-window': spawnHidesWindow,
 };
 
 const LOCAL_PLUGIN = { meta: { name: '@drizztdourden08/standards' }, rules: LOCAL_RULES };

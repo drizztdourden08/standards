@@ -26,8 +26,8 @@ const tempTree = (files) => {
  */
 const gitTree = (files) => {
   const root = tempTree({ 'global-excludes': '', ...files });
-  execFileSync('git', ['init', '-q'], { cwd: root });
-  execFileSync('git', ['config', 'core.excludesFile', join(root, 'global-excludes')], { cwd: root });
+  execFileSync('git', ['init', '-q'], { cwd: root, windowsHide: true });
+  execFileSync('git', ['config', 'core.excludesFile', join(root, 'global-excludes')], { cwd: root, windowsHide: true });
   return root;
 };
 

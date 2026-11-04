@@ -85,7 +85,7 @@ const runKnip = ({ rootDir, args = [], label = 'standards knip' }) => {
   const configArgs = config ? ['--no-gitignore', '--config', writeConfig(rootDir, config)] : [];
   const steps = [...(config ? [HINTS] : []), ...knipPreprocessors(loadStandards({ rootDir }))];
   const stepArgs = preprocessorArgs(join(rootDir, ...CACHE_DIR), steps);
-  return spawnSync(process.execPath, [bin, ...configArgs, ...stepArgs, ...args], { cwd: rootDir, stdio: 'inherit' }).status ?? 1;
+  return spawnSync(process.execPath, [bin, ...configArgs, ...stepArgs, ...args], { cwd: rootDir, stdio: 'inherit', windowsHide: true }).status ?? 1;
 };
 
 export { runKnip, knipConfigFor, writeConfig };
