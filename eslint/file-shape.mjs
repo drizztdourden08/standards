@@ -40,7 +40,14 @@ const oneExportExempt = (settings) => [...ONE_EXPORT_EXEMPT, ...(settings?.stand
 
 const baseNameOf = (file) => normalize(file).split('/').at(-1)?.replace(/\.[^.]+$/, '') ?? '';
 
-const typeFileFor = (file) => `${baseNameOf(file)}.type.ts`;
-const constantsFileFor = (file) => `${baseNameOf(file)}.constants.ts`;
+const kebabOf = (name) => name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+
+const companionStemOf = (file) => {
+  const base = baseNameOf(file);
+  return HOOK_NAME.test(base) ? kebabOf(base.slice('use'.length)) : base;
+};
+
+const typeFileFor = (file) => `${companionStemOf(file)}.type.ts`;
+const constantsFileFor = (file) => `${companionStemOf(file)}.constants.ts`;
 
 export { FILE_KIND, SHAPE_OFF_KINDS, ONE_EXPORT_EXEMPT, oneExportExempt, GLOBAL_STYLESHEET, HEADER_TAG, UPPER_SNAKE, HOOK_NAME, COMPONENT_NAME, normalize, kindsOf, hasKind, baseNameOf, typeFileFor, constantsFileFor };
