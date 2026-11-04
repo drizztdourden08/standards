@@ -1,5 +1,11 @@
 # @drizztdourden08/standards
 
+## 0.15.0
+
+### Minor Changes
+
+- c51298a: New lint rule `local/spawn-hides-window`, an error on `js`, `mjs`, `cjs`, `ts` and `tsx` files. A `child_process` call must pass an options object with a `windowsHide` key, so no console window flashes on Windows. Use `true` for a console tool and `false` only for a GUI app whose window must show.
+
 ## 0.14.9
 
 ### Patch Changes
