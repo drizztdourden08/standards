@@ -31,6 +31,7 @@ const standardsEslint = (input = {}) => {
       'local/no-slop-identifiers': ['error', { allow: words.allow }],
       'local/exports-last': 'error',
       'local/file-header': 'error',
+      'local/spawn-hides-window': 'error',
     },
     commentAllow: [...DEFAULT_COMMENT_ALLOW, ...(opts.comments?.allow ?? [])],
   };

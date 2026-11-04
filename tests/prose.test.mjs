@@ -49,7 +49,7 @@ describe('runProse', { tags: ['standard'] }, () => {
 
   it('skips a tracked file that is deleted but not committed', () => {
     const root = gitTree({ 'gone.txt': 'plain\n', 'notes.txt': 'plain\n' });
-    execFileSync('git', ['add', '-A'], { cwd: root });
+    execFileSync('git', ['add', '-A'], { cwd: root, windowsHide: true });
     rmSync(join(root, 'gone.txt'));
     const lines = captured();
     expect(runProse({ rootDir: root })).toBe(0);
