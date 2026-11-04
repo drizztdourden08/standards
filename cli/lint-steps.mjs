@@ -15,8 +15,7 @@ const stylelintPattern = (globs) => {
   return new RegExp(`\\.(?:${extensions.join('|')})$`);
 };
 
-const stylelintArgs = (rootDir, targets) => [
-  ...targets,
+const stylelintFlags = (rootDir) => [
   '--allow-empty-input',
   ...(existsSync(join(rootDir, '.gitignore')) ? ['--ignore-path', '.gitignore'] : []),
 ];
@@ -40,10 +39,16 @@ const eslintStep = (theirs, files) => {
   return batches.length && { ...tool('eslint', 'eslint', theirs, batches[0]), batches, heap: true };
 };
 
+const stylelintStep = (theirs, rootDir, targets) => {
+  const batches = batchesOf(targets).map((batch) => [...batch, ...stylelintFlags(rootDir)]);
+  return batches.length && { ...tool('stylelint', 'stylelint', theirs, batches[0]), batches };
+};
+
 const targetsOf = (plan, styleGlobs, rootDir) => {
-  if (plan.mode !== 'changed') return { eslint: lintableFiles(rootDir), stylelint: styleGlobs, jscpd: ['.'] };
+  const styleFiles = stylelintPattern(styleGlobs);
+  if (plan.mode !== 'changed') return { eslint: lintableFiles(rootDir), stylelint: lintableFiles(rootDir, styleFiles) ?? styleGlobs, jscpd: ['.'] };
   const only = (pattern) => plan.files.filter((file) => pattern.test(file));
-  return { eslint: only(ESLINT_FILES), stylelint: only(stylelintPattern(styleGlobs)), jscpd: only(JSCPD_FILES) };
+  return { eslint: only(ESLINT_FILES), stylelint: only(styleFiles), jscpd: only(JSCPD_FILES) };
 };
 
 /**
@@ -57,7 +62,7 @@ const lintSteps = ({ rootDir, lint, plan }) => {
   const steps = [
     existsSync(join(rootDir, 'tsconfig.json')) && tool('typecheck', 'typescript', theirs, ['--noEmit']),
     eslintStep(theirs, targets.eslint),
-    targets.stylelint.length && tool('stylelint', 'stylelint', theirs, stylelintArgs(rootDir, targets.stylelint)),
+    stylelintStep(theirs, rootDir, targets.stylelint),
     standards('prose', ['prose', '--root', rootDir]),
     !changed && standards('knip', ['knip']),
     targets.jscpd.length && tool('jscpd', 'jscpd', theirs, jscpdArgs(rootDir, targets.jscpd)),
