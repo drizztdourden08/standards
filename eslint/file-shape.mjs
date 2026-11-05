@@ -43,7 +43,7 @@ const baseNameOf = (file) => normalize(file).split('/').at(-1)?.replace(/\.[^.]+
 const kebabOf = (name) => name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
 
 const companionStemOf = (file) => {
-  const base = baseNameOf(file);
+  const base = baseNameOf(file).replace(/\.[a-z]+$/, '');
   return HOOK_NAME.test(base) ? kebabOf(base.slice('use'.length)) : base;
 };
 
