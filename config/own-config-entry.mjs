@@ -12,10 +12,9 @@ const withOwnEntry = (target) => {
 };
 
 /**
- * The standards CLI reads standards.config.mjs itself, so the unused-file check takes it as a root entry.
  * @param {Record<string, any>} config the repo knip.json plus git-ignored paths
  * @param {string} rootDir
- * @returns {Record<string, any>} config with standards.config.mjs as a root entry when the file exists
+ * @returns {Record<string, any>} config with a root entry for it
  */
 const withOwnConfigEntry = (config, rootDir) => {
   if (!existsSync(join(rootDir, OWN_CONFIG))) return config;
