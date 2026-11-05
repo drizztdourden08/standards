@@ -1,6 +1,7 @@
 /* @layer tooling-scripts @kind logic */
 import { resolve } from 'node:path';
 import { facetsOf } from './merge.mjs';
+import { withOwnConfigEntry } from './own-config-entry.mjs';
 
 const ROOT_WORKSPACE = '.';
 const asList = (value) => (value === undefined ? [] : [value].flat());
@@ -37,9 +38,10 @@ const withFacetEntries = (config, facets, { rootDir, context }) => {
 /**
  * @param {Record<string, any>} config the repo knip.json plus git-ignored paths
  * @param {{ rootDir: string, context: { rootDir: string, packageDir?: string }, extensions: Record<string, any>[] }} loaded what loadStandards returns
- * @returns {Record<string, any>} config with the knip facets merged
+ * @returns {Record<string, any>} config with standards.config.mjs as a root entry and the knip facets merged
  */
-const withKnipFacets = (config, loaded) => {
+const withKnipFacets = (repoConfig, loaded) => {
+  const config = withOwnConfigEntry(repoConfig, loaded.rootDir);
   const facets = facetsOf(loaded.extensions, 'knip');
   if (!facets.length) return config;
   const compilers = mergedCompilers(config.compilers, facets);

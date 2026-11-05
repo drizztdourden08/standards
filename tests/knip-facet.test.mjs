@@ -31,6 +31,16 @@ describe('knipPreprocessors', { tags: ['critical'] }, () => {
 });
 
 describe('withKnipFacets', { tags: ['standard'] }, () => {
+  it('takes standards.config.mjs as a root entry when it exists, keeping the default entries', () => {
+    const rootDir = tempTree({ 'standards.config.mjs': 'export default {};
+' });
+    const plain = withKnipFacets({ ignore: [] }, loaded([], rootDir));
+    expect(plain.entry).toEqual(expect.arrayContaining(['standards.config.mjs', '{index,cli,main}.{js,cjs,mjs,jsx,ts,cts,mts,tsx}']));
+    const rooted = withKnipFacets({ workspaces: { '.': { entry: ['main.ts'] }, 'packages/*': {} } }, loaded([], rootDir));
+    expect(rooted.workspaces['.'].entry).toEqual(['main.ts', 'standards.config.mjs']);
+    expect(rooted.workspaces['packages/*']).toEqual({});
+  });
+
   it('leaves the config as it is when no extension has a knip facet', () => {
     const config = { entry: ['a.ts'], ignore: [] };
     expect(withKnipFacets(config, loaded([{ id: 'x', prose: {} }]))).toBe(config);
