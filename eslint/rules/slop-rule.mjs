@@ -1,5 +1,6 @@
 /* @layer tooling-scripts @kind logic */
 import { DEFAULT_ALLOW, findSlop } from '../../writing/slop-patterns.mjs';
+import { isForeignLocale } from '../../writing/locale-of.mjs';
 import { expectedValueCheck } from './expected-value.mjs';
 
 const DIRECTIVE_COMMENT = /^\s*(eslint\b|eslint-|globals?\b|exported\b|@ts-|prettier-|istanbul\b|c8\b|v8\b|@jsx\b|#!)/;
@@ -17,10 +18,11 @@ const slopRule = (group, description) => ({
     const allow = context.options?.[0]?.allow ?? DEFAULT_ALLOW;
     const banned = context.options?.[0]?.banned;
     const skipStringValues = context.options?.[0]?.skipStringValues === true;
-    const expectedValue = group === 'brand' ? () => false : expectedValueCheck(context);
+    const expectedValue = group.startsWith('brand') ? () => false : expectedValueCheck(context);
+    const foreignLocale = isForeignLocale(context.filename ?? context.getFilename?.());
     const isExpectedValue = (node) => skipStringValues || expectedValue(node);
     const scan = (start, text) => {
-      for (const hit of findSlop(text, { allow, banned, groups: [group] })) {
+      for (const hit of findSlop(text, { allow, banned, groups: [group], foreignLocale })) {
         const at = start + hit.index;
         context.report({
           loc: { start: sourceCode.getLocFromIndex(at), end: sourceCode.getLocFromIndex(at + hit.length) },
@@ -56,4 +58,6 @@ const noSmartPunctuation = slopRule('punct', 'No unicode ellipsis or curly quote
 const noSlopProse = slopRule('prose', 'No stock phrases, connectors, slop words or filler adverbs');
 const noToolBrandWords = slopRule('brand', 'No banned tool and vendor names in comments and strings');
 
-export { noEmDash, noSmartPunctuation, noSlopProse, noToolBrandWords };
+const noAmbiguousBrandWords = slopRule('brand-ambiguous', 'In a translation file of another language, a word such as ai is only a warning');
+
+export { noEmDash, noSmartPunctuation, noSlopProse, noToolBrandWords, noAmbiguousBrandWords };

@@ -1,5 +1,5 @@
 /* @layer tooling-scripts @kind logic */
-import { SLOP_WORDS, FILLER_ADVERBS, STOCK_PHRASES, CONNECTORS, TOOL_BRAND_WORDS } from './slop-word-lists.mjs';
+import { SLOP_WORDS, FILLER_ADVERBS, STOCK_PHRASES, CONNECTORS, TOOL_BRAND_WORDS, AMBIGUOUS_BRAND_WORDS } from './slop-word-lists.mjs';
 
 const w = (words) => new RegExp(`\\b(?:${words})\\b`, 'gi');
 
@@ -100,6 +100,14 @@ const PATTERNS = [
     advice: 'These projects do not name this kind of tool or its vendor. Say what the code does, or delete the word.',
   },
   {
+    id: 'ambiguous-brand-word',
+    group: 'brand',
+    foreignGroup: 'brand-ambiguous',
+    re: new RegExp(`(?<![\\w$])(?:${AMBIGUOUS_BRAND_WORDS})(?![\\w$])`, 'gi'),
+    advice: 'These projects do not name this kind of tool or its vendor. Say what the code does, or delete the word.',
+    foreignAdvice: 'A plain word in this language (Italian or French "ai"), so only a warning here. If it names the tool, rewrite it.',
+  },
+  {
     id: 'exclamation',
     group: 'prose',
     re: /[a-z]![ \n"')]/g,
@@ -115,7 +123,7 @@ const DEFAULT_ALLOW = [
   'underscore', 'underscores',
 ];
 
-const RULE_BY_GROUP = { dash: 'no-em-dash', punct: 'no-smart-punctuation', prose: 'no-slop-prose', brand: 'no-tool-brand-words' };
+const RULE_BY_GROUP = { dash: 'no-em-dash', punct: 'no-smart-punctuation', prose: 'no-slop-prose', brand: 'no-tool-brand-words', 'brand-ambiguous': 'no-ambiguous-brand-words' };
 const GROUPS = ['dash', 'punct', 'prose', 'brand'];
 
 const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -135,7 +143,7 @@ const isIdentifierUse = (text, index, length) => {
 
 /**
  * @param {string} text
- * @param {{ allow?: string[], banned?: string[], groups?: string[] }} [opts]
+ * @param {{ allow?: string[], banned?: string[], groups?: string[], foreignLocale?: boolean }} [opts] foreignLocale moves words that are plain words in other languages to the brand-ambiguous group
  * @returns {{ id: string, group: string, index: number, length: number, match: string, message: string }[]}
  */
 const headOf = (p, match) => {
@@ -183,12 +191,14 @@ const bannedPattern = (banned) => ({
   advice: 'This repo bans the word. Use a plain word, or delete it.',
 });
 
-const patternsFor = (banned) => (banned?.length ? [...PATTERNS, bannedPattern(banned)] : PATTERNS);
+const inLocale = (foreignLocale) => (p) => (foreignLocale && p.foreignGroup ? { ...p, group: p.foreignGroup, advice: p.foreignAdvice } : p);
+
+const patternsFor = (banned, foreignLocale) => (banned?.length ? [...PATTERNS, bannedPattern(banned)] : PATTERNS).map(inLocale(foreignLocale));
 
 const findSlop = (text, opts = {}) => {
   const allow = compileAllow(opts.allow ?? DEFAULT_ALLOW);
   const groups = opts.groups ?? GROUPS;
-  const found = patternsFor(opts.banned).filter((p) => groups.includes(p.group)).flatMap((p) => hitsOf(p, text, allow));
+  const found = patternsFor(opts.banned, opts.foreignLocale === true).filter((p) => groups.includes(p.group)).flatMap((p) => hitsOf(p, text, allow));
   return withoutOverlaps(found);
 };
 

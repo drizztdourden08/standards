@@ -24,6 +24,7 @@ const slopRules = (allow, banned = []) => {
     'local/no-smart-punctuation': ['error', options],
     'local/no-slop-prose': ['error', options],
     'local/no-tool-brand-words': ['error', options],
+    'local/no-ambiguous-brand-words': ['warn', options],
   };
 };
 

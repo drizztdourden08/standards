@@ -2,7 +2,8 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
-import { DEFAULT_ALLOW, findSlop } from '../writing/slop-patterns.mjs';
+import { DEFAULT_ALLOW, GROUPS, findSlop } from '../writing/slop-patterns.mjs';
+import { isForeignLocale } from '../writing/locale-of.mjs';
 import { loadStandards } from '../config/load.mjs';
 import { proseWords } from '../config/merge.mjs';
 import { readProseIgnore } from './prose-ignore.mjs';
@@ -48,9 +49,10 @@ const lineColOf = (text, index) => {
 
 const scanFile = (rootDir, file, words) => {
   const text = readFileSync(join(rootDir, file), 'utf8');
-  return findSlop(text, words).map((hit) => {
+  const opts = { ...words, groups: [...GROUPS, 'brand-ambiguous'], foreignLocale: isForeignLocale(file) };
+  return findSlop(text, opts).map((hit) => {
     const { line, col } = lineColOf(text, hit.index);
-    return `${file}:${line}:${col}  ${hit.message}`;
+    return { warning: hit.group === 'brand-ambiguous', text: `${file}:${line}:${col}  ${hit.message}` };
   });
 };
 
@@ -75,9 +77,10 @@ const runProse = (ctx) => {
   for (const problem of ignore.problems) console.log(`.proseignore: ${problem}`);
   const files = candidateFiles(rootDir).filter(isProseTarget).filter((file) => !ignore.matchers.some((match) => match(file)));
   const findings = files.flatMap((file) => scanFile(rootDir, file, words));
-  for (const finding of findings) console.log(finding);
-  console.log(`${label}: ${files.length} file(s) outside eslint, stylelint and markdownlint scanned, ${findings.length} finding(s).`);
-  return findings.length === 0 && ignore.problems.length === 0 ? 0 : 1;
+  for (const finding of findings) console.log(finding.warning ? `${finding.text} (warning)` : finding.text);
+  const errors = findings.filter((finding) => !finding.warning).length;
+  console.log(`${label}: ${files.length} file(s) outside eslint, stylelint and markdownlint scanned, ${errors} finding(s), ${findings.length - errors} warning(s).`);
+  return errors === 0 && ignore.problems.length === 0 ? 0 : 1;
 };
 
 export { runProse, readProseIgnore };

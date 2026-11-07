@@ -54,8 +54,10 @@ const CONNECTORS = [
 ].join('|');
 
 const TOOL_BRAND_WORDS = [
-  'a\\.i\\.|ai|llms?|gpt|chatgpt|claude|copilot|openai|anthropic|chatbots?|genai',
+  'a\\.i\\.|llms?|gpt|chatgpt|claude|copilot|openai|anthropic|chatbots?|genai',
   'artificial\\s+intelligence|language\\s+models?|machine\\s+learning',
 ].join('|');
 
-export { SLOP_WORDS, FILLER_ADVERBS, STOCK_PHRASES, CONNECTORS, TOOL_BRAND_WORDS };
+const AMBIGUOUS_BRAND_WORDS = 'ai';
+
+export { SLOP_WORDS, FILLER_ADVERBS, STOCK_PHRASES, CONNECTORS, TOOL_BRAND_WORDS, AMBIGUOUS_BRAND_WORDS };
