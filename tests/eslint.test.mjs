@@ -115,6 +115,28 @@ describe('local/no-tool-brand-words', { tags: ['standard'] }, () => {
   });
 });
 
+describe('local/no-ambiguous-brand-words', { tags: ['standard'] }, () => {
+  const code = `${HEADER}const t = 'torna ai menu';
+
+export { t };
+`;
+  const ruleIds = (messages) => messages.map((m) => m.split(':')[0]);
+
+  it('reports ai in a foreign-locale file as the ambiguous rule only', async () => {
+    const root = tempTree({ 'package.json': { name: 'x' } });
+    const ids = ruleIds(await lint(root, 'src/i18n/locales/it/menu.mjs', code));
+    expect(ids).toContain('local/no-ambiguous-brand-words');
+    expect(ids).not.toContain('local/no-tool-brand-words');
+  });
+
+  it('reports the same string outside a locale folder as the brand rule only', async () => {
+    const root = tempTree({ 'package.json': { name: 'x' } });
+    const ids = ruleIds(await lint(root, 'src/menu.mjs', code));
+    expect(ids).toContain('local/no-tool-brand-words');
+    expect(ids).not.toContain('local/no-ambiguous-brand-words');
+  });
+});
+
 describe('local/no-slop-identifiers tool and vendor segments', { tags: ['standard'] }, () => {
   const declare = (name) => `${HEADER}const ${name} = 1;\n\nexport { ${name} };\n`;
   const identifierHits = async (root, name) => (await lint(root, 'a.mjs', declare(name))).filter((m) => m.startsWith('local/no-slop-identifiers'));

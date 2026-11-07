@@ -30,7 +30,7 @@ describe('runProse', { tags: ['standard'] }, () => {
     const root = tempTree({ 'notes.txt': 'It is a robust tool.\n', 'a.ts': 'const robust = 1;\n' });
     const lines = captured();
     expect(runProse({ rootDir: root, label: 'brock prose' })).toBe(1);
-    expect(lines.at(-1)).toBe('brock prose: 1 file(s) outside eslint, stylelint and markdownlint scanned, 1 finding(s).');
+    expect(lines.at(-1)).toBe('brock prose: 1 file(s) outside eslint, stylelint and markdownlint scanned, 1 finding(s), 0 warning(s).');
     expect(lines[0]).toMatch(/^notes\.txt:1:9 {2}"robust": /);
   });
 
@@ -38,7 +38,7 @@ describe('runProse', { tags: ['standard'] }, () => {
     const root = tempTree({ 'LICENSE.txt': 'a robust licence\n', '.proseignore': 'LICENSE.txt   travels unchanged\n' });
     const lines = captured();
     expect(runProse({ rootDir: root })).toBe(0);
-    expect(lines).toEqual(['standards prose: 0 file(s) outside eslint, stylelint and markdownlint scanned, 0 finding(s).']);
+    expect(lines).toEqual(['standards prose: 0 file(s) outside eslint, stylelint and markdownlint scanned, 0 finding(s), 0 warning(s).']);
   });
 
   it('allows the words the config allows', () => {
@@ -54,6 +54,26 @@ describe('runProse', { tags: ['standard'] }, () => {
     const lines = captured();
     expect(runProse({ rootDir: root })).toBe(0);
     expect(lines.at(-1)).toMatch(/1 file\(s\) outside/);
+  });
+});
+
+describe('runProse ai in a translation file', { tags: ['standard'] }, () => {
+  it('prints a warning and exits 0 for ai in a foreign-locale file', () => {
+    const root = tempTree({ 'src/i18n/locales/it.json': '{ "back": "torna ai menu" }
+' });
+    const lines = captured();
+    expect(runProse({ rootDir: root })).toBe(0);
+    expect(lines[0]).toMatch(/\(warning\)$/);
+    expect(lines.at(-1)).toMatch(/0 finding\(s\), 1 warning\(s\)\.$/);
+  });
+
+  it('fails for the same text in an English file', () => {
+    const root = tempTree({ 'src/i18n/locales/en.json': '{ "back": "torna ai menu" }
+' });
+    const lines = captured();
+    expect(runProse({ rootDir: root })).toBe(1);
+    expect(lines[0]).not.toMatch(/\(warning\)$/);
+    expect(lines.at(-1)).toMatch(/1 finding\(s\), 0 warning\(s\)\.$/);
   });
 });
 
