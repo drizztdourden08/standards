@@ -144,7 +144,7 @@ const isIdentifierUse = (text, index, length) => {
 
 /**
  * @param {string} text
- * @param {{ allow?: string[], banned?: string[], groups?: string[], locale?: string | null }} [opts] locale is the language of a translation file; a word that is a plain word in that language moves to the brand-ambiguous group
+ * @param {{ allow?: string[], banned?: string[], groups?: string[], locale?: string | null }} [opts] locale: the language of the file
  * @returns {{ id: string, group: string, index: number, length: number, match: string, message: string }[]}
  */
 const headOf = (p, match) => {

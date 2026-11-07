@@ -11,18 +11,21 @@ const SLOP_SCHEMA = [{
   additionalProperties: false,
 }];
 
+const optionsOf = (context, group) => {
+  const options = context.options?.[0] ?? {};
+  return { allow: options.allow ?? DEFAULT_ALLOW, banned: options.banned, groups: [group], locale: localeOf(context.filename ?? context.getFilename?.()) };
+};
+
 const slopRule = (group, description) => ({
   meta: { type: 'problem', docs: { description }, schema: SLOP_SCHEMA },
   create(context) {
     const sourceCode = context.sourceCode ?? context.getSourceCode();
-    const allow = context.options?.[0]?.allow ?? DEFAULT_ALLOW;
-    const banned = context.options?.[0]?.banned;
+    const slopOptions = optionsOf(context, group);
     const skipStringValues = context.options?.[0]?.skipStringValues === true;
     const expectedValue = group.startsWith('brand') ? () => false : expectedValueCheck(context);
-    const locale = localeOf(context.filename ?? context.getFilename?.());
     const isExpectedValue = (node) => skipStringValues || expectedValue(node);
     const scan = (start, text) => {
-      for (const hit of findSlop(text, { allow, banned, groups: [group], locale })) {
+      for (const hit of findSlop(text, slopOptions)) {
         const at = start + hit.index;
         context.report({
           loc: { start: sourceCode.getLocFromIndex(at), end: sourceCode.getLocFromIndex(at + hit.length) },
@@ -58,6 +61,6 @@ const noSmartPunctuation = slopRule('punct', 'No unicode ellipsis or curly quote
 const noSlopProse = slopRule('prose', 'No stock phrases, connectors, slop words or filler adverbs');
 const noToolBrandWords = slopRule('brand', 'No banned tool and vendor names in comments and strings');
 
-const noAmbiguousBrandWords = slopRule('brand-ambiguous', 'In an Italian or Japanese translation file, the word ai is only a warning');
+const noAmbiguousBrandWords = slopRule('brand-ambiguous', 'A word that is also a plain Italian or Japanese word is only a warning in those translation files');
 
 export { noEmDash, noSmartPunctuation, noSlopProse, noToolBrandWords, noAmbiguousBrandWords };

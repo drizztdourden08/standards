@@ -3,10 +3,8 @@ const LOCALE_DIRS = new Set(['locales', 'locale', 'i18n', 'l10n', 'lang', 'langs
 const LOCALE_CODE = /^([a-z]{2,3})(?:[-_][A-Za-z0-9]{2,8})*$/;
 
 /**
- * The language of a translation file, read from its path: the folder or file name right after a locales, i18n, lang or
- * translations folder (`src/i18n/locales/it/menu.ts`, `lang/pt-BR.json`). Null when the path names no locale.
  * @param {string | undefined} file
- * @returns {string | null}
+ * @returns {string | null} the language a translation file is in
  */
 const localeOf = (file) => {
   if (!file) return null;

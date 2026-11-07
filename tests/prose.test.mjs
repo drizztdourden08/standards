@@ -59,8 +59,7 @@ describe('runProse', { tags: ['standard'] }, () => {
 
 describe('runProse ai in a translation file', { tags: ['standard'] }, () => {
   it('prints a warning and exits 0 for ai in a foreign-locale file', () => {
-    const root = tempTree({ 'src/i18n/locales/it.json': '{ "back": "torna ai menu" }
-' });
+    const root = tempTree({ 'src/i18n/locales/it.json': '{ "back": "torna ai menu" }\n' });
     const lines = captured();
     expect(runProse({ rootDir: root })).toBe(0);
     expect(lines[0]).toMatch(/\(warning\)$/);
@@ -68,8 +67,7 @@ describe('runProse ai in a translation file', { tags: ['standard'] }, () => {
   });
 
   it('fails for the same text in an English file', () => {
-    const root = tempTree({ 'src/i18n/locales/en.json': '{ "back": "torna ai menu" }
-' });
+    const root = tempTree({ 'src/i18n/locales/en.json': '{ "back": "torna ai menu" }\n' });
     const lines = captured();
     expect(runProse({ rootDir: root })).toBe(1);
     expect(lines[0]).not.toMatch(/\(warning\)$/);
