@@ -103,9 +103,10 @@ const PATTERNS = [
     id: 'ambiguous-brand-word',
     group: 'brand',
     foreignGroup: 'brand-ambiguous',
+    languages: ['it', 'ja'],
     re: new RegExp(`(?<![\\w$])(?:${AMBIGUOUS_BRAND_WORDS})(?![\\w$])`, 'gi'),
     advice: 'These projects do not name this kind of tool or its vendor. Say what the code does, or delete the word.',
-    foreignAdvice: 'A plain word in this language (Italian or French "ai"), so only a warning here. If it names the tool, rewrite it.',
+    foreignAdvice: 'Leave it only when it is the Italian or Japanese word ai with its meaning in that language. If it names the tool, rewrite it.',
   },
   {
     id: 'exclamation',
@@ -143,7 +144,7 @@ const isIdentifierUse = (text, index, length) => {
 
 /**
  * @param {string} text
- * @param {{ allow?: string[], banned?: string[], groups?: string[], foreignLocale?: boolean }} [opts] foreignLocale moves words that are plain words in other languages to the brand-ambiguous group
+ * @param {{ allow?: string[], banned?: string[], groups?: string[], locale?: string | null }} [opts] locale is the language of a translation file; a word that is a plain word in that language moves to the brand-ambiguous group
  * @returns {{ id: string, group: string, index: number, length: number, match: string, message: string }[]}
  */
 const headOf = (p, match) => {
@@ -191,14 +192,14 @@ const bannedPattern = (banned) => ({
   advice: 'This repo bans the word. Use a plain word, or delete it.',
 });
 
-const inLocale = (foreignLocale) => (p) => (foreignLocale && p.foreignGroup ? { ...p, group: p.foreignGroup, advice: p.foreignAdvice } : p);
+const inLocale = (locale) => (p) => (p.languages?.includes(locale) ? { ...p, group: p.foreignGroup, advice: p.foreignAdvice } : p);
 
-const patternsFor = (banned, foreignLocale) => (banned?.length ? [...PATTERNS, bannedPattern(banned)] : PATTERNS).map(inLocale(foreignLocale));
+const patternsFor = (banned, locale) => (banned?.length ? [...PATTERNS, bannedPattern(banned)] : PATTERNS).map(inLocale(locale));
 
 const findSlop = (text, opts = {}) => {
   const allow = compileAllow(opts.allow ?? DEFAULT_ALLOW);
   const groups = opts.groups ?? GROUPS;
-  const found = patternsFor(opts.banned, opts.foreignLocale === true).filter((p) => groups.includes(p.group)).flatMap((p) => hitsOf(p, text, allow));
+  const found = patternsFor(opts.banned, opts.locale ?? null).filter((p) => groups.includes(p.group)).flatMap((p) => hitsOf(p, text, allow));
   return withoutOverlaps(found);
 };
 

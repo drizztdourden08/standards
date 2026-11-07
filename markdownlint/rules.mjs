@@ -1,6 +1,6 @@
 /* @layer tooling-scripts @kind logic */
 import { DEFAULT_ALLOW, findSlop } from '../writing/slop-patterns.mjs';
-import { isForeignLocale } from '../writing/locale-of.mjs';
+import { localeOf } from '../writing/locale-of.mjs';
 
 const FENCE = /^\s{0,3}(`{3,}|~{3,})/;
 const INLINE_CODE = /`+[^`]*`+/g;
@@ -30,7 +30,7 @@ const makeRule = (id, name, group, description) => ({
     const banned = params.config?.banned;
     const lines = maskCode(params.lines);
     lines.forEach((line, i) => {
-      for (const hit of findSlop(line, { allow, banned, groups: [group], foreignLocale: isForeignLocale(params.name) })) {
+      for (const hit of findSlop(line, { allow, banned, groups: [group], locale: localeOf(params.name) })) {
         onError({
           lineNumber: i + 1,
           detail: hit.message,

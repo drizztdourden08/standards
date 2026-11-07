@@ -3,7 +3,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { DEFAULT_ALLOW, GROUPS, findSlop } from '../writing/slop-patterns.mjs';
-import { isForeignLocale } from '../writing/locale-of.mjs';
+import { localeOf } from '../writing/locale-of.mjs';
 import { loadStandards } from '../config/load.mjs';
 import { proseWords } from '../config/merge.mjs';
 import { readProseIgnore } from './prose-ignore.mjs';
@@ -49,7 +49,7 @@ const lineColOf = (text, index) => {
 
 const scanFile = (rootDir, file, words) => {
   const text = readFileSync(join(rootDir, file), 'utf8');
-  const opts = { ...words, groups: [...GROUPS, 'brand-ambiguous'], foreignLocale: isForeignLocale(file) };
+  const opts = { ...words, groups: [...GROUPS, 'brand-ambiguous'], locale: localeOf(file) };
   return findSlop(text, opts).map((hit) => {
     const { line, col } = lineColOf(text, hit.index);
     return { warning: hit.group === 'brand-ambiguous', text: `${file}:${line}:${col}  ${hit.message}` };

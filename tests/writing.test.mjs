@@ -1,6 +1,6 @@
 /* @layer tooling-scripts @kind test */
 import { describe, expect, it } from 'vitest';
-import { findSlop, GROUPS, RULE_BY_GROUP, localeOf, isForeignLocale } from '../writing/index.mjs';
+import { findSlop, GROUPS, RULE_BY_GROUP, localeOf } from '../writing/index.mjs';
 
 const brandHits = (text) => findSlop(text, { groups: ['brand'] }).map((hit) => hit.match);
 
@@ -48,20 +48,17 @@ describe('locale-based ai warning', { tags: ['standard'] }, () => {
     expect(localeOf('src/i18n/index.ts')).toBeNull();
   });
 
-  it('calls a locale foreign only when it is not English', () => {
-    expect(isForeignLocale('src/i18n/locales/it/menu.ts')).toBe(true);
-    expect(isForeignLocale('src/i18n/locales/en/x.ts')).toBe(false);
-    expect(isForeignLocale('src/menu.ts')).toBe(false);
-  });
-
-  it('moves ai to the brand-ambiguous group in a foreign locale only', () => {
+  it('moves ai to the brand-ambiguous group in Italian and Japanese only', () => {
     const groups = ['brand', 'brand-ambiguous'];
-    expect(findSlop('torna ai menu', { groups, foreignLocale: true }).map((hit) => hit.group)).toEqual(['brand-ambiguous']);
+    expect(findSlop('torna ai menu', { groups, locale: 'it' }).map((hit) => hit.group)).toEqual(['brand-ambiguous']);
+    expect(findSlop('ai', { groups, locale: 'ja' }).map((hit) => hit.group)).toEqual(['brand-ambiguous']);
+    expect(findSlop('ai', { groups, locale: 'fr' }).map((hit) => hit.group)).toEqual(['brand']);
+    expect(findSlop('ai', { groups, locale: 'en' }).map((hit) => hit.group)).toEqual(['brand']);
     expect(findSlop('torna ai menu', { groups }).map((hit) => hit.group)).toEqual(['brand']);
   });
 
-  it('keeps a real tool name in the brand group in a foreign locale', () => {
-    expect(findSlop('usa ChatGPT', { groups: ['brand', 'brand-ambiguous'], foreignLocale: true }).map((hit) => hit.group)).toEqual(['brand']);
+  it('keeps a real tool name in the brand group in an Italian file', () => {
+    expect(findSlop('usa ChatGPT', { groups: ['brand', 'brand-ambiguous'], locale: 'it' }).map((hit) => hit.group)).toEqual(['brand']);
   });
 
   it('maps the ambiguous group to its own rule id', () => {

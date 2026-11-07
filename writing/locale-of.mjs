@@ -20,13 +20,4 @@ const localeOf = (file) => {
   return null;
 };
 
-/**
- * @param {string | undefined} file
- * @returns {boolean} true for a translation file in a language other than English
- */
-const isForeignLocale = (file) => {
-  const lang = localeOf(file);
-  return lang !== null && lang !== 'en';
-};
-
-export { localeOf, isForeignLocale };
+export { localeOf };
