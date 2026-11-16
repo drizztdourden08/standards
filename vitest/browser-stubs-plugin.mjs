@@ -15,7 +15,7 @@ const resolveDebugBrowser = (resolveDir) => {
 };
 
 /**
- * @returns {import('esbuild').Plugin} css stubbed, debug on its browser build
+ * @returns {{ name: string, setup: (build: any) => void }} css stubbed, debug on its browser build
  */
 const browserStubsPlugin = () => ({
   name: 'standards-browser-stubs',
