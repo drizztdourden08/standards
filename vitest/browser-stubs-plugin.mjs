@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 /**
  * @param {string} resolveDir
- * @returns {string | undefined} the browser build of debug, else undefined so esbuild resolves it
+ * @returns {string | undefined} debug's browser build, or undefined
  */
 const resolveDebugBrowser = (resolveDir) => {
   try {
@@ -15,8 +15,7 @@ const resolveDebugBrowser = (resolveDir) => {
 };
 
 /**
- * An esbuild plugin for the vitest optimizer: debug takes its browser build (its node build pulls tty) and css imports become empty modules.
- * @returns {import('esbuild').Plugin}
+ * @returns {import('esbuild').Plugin} css stubbed, debug on its browser build
  */
 const browserStubsPlugin = () => ({
   name: 'standards-browser-stubs',

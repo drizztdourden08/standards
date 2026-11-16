@@ -47,10 +47,9 @@ const entriesOf = (pkgDir, name, key, target) => {
 };
 
 /**
- * The import specifiers of every code entry a package exports, for the vitest optimizer include list.
  * @param {string} pkgDir the package folder
  * @param {string} name the package name
- * @returns {string[]} sorted, no duplicates
+ * @returns {string[]} the code entry specifiers, sorted, no duplicates
  */
 const prebundleEntries = (pkgDir, name) => {
   const { exports: map } = JSON.parse(readFileSync(join(pkgDir, 'package.json'), 'utf8'));

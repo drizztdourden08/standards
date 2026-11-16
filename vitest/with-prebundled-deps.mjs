@@ -21,7 +21,7 @@ const findPackage = (root, appDir, name) => {
 /**
  * @param {Record<string, any>} [client] the optimizer client options already set
  * @param {string[]} entries the specifiers to prebundle
- * @returns {Record<string, any>} the client options with the entries and the browser stubs added
+ * @returns {Record<string, any>} the options plus the entries and browser stubs
  */
 const clientWith = (client = {}, entries) => {
   const esbuild = client.esbuildOptions ?? {};
@@ -34,11 +34,9 @@ const clientWith = (client = {}, entries) => {
 };
 
 /**
- * Turns on the vitest dependency optimizer for source-shipping packages, so a cold import is prebundled once.
- * A package listed here is shared as one prebundled copy, so vi.mock of its inner files does not apply.
  * @param {import('vitest/config').ViteUserConfig} config
  * @param {{ root: string, appDir?: string, packages: string[] }} options
- * @returns {import('vitest/config').ViteUserConfig} a new config
+ * @returns {import('vitest/config').ViteUserConfig} a new config, the optimizer on
  */
 const withPrebundledDeps = (config, { root, appDir = root, packages }) => {
   const entries = packages.flatMap((name) => prebundleEntries(findPackage(root, appDir, name), name));
