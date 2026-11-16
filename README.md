@@ -111,6 +111,18 @@ export default defineStandardsVitest({ test: { include: ['src/**/*.test.ts'] } }
 
 It sets the forks pool, at most 3 workers, the three tags with their timeouts (e2e with `concurrent: false`), `strictTags`, hook and teardown timeouts and `bail: 3`. The `test` keys you pass replace those keys.
 
+A package that ships TypeScript source can take a long time to import cold in a jsdom test. `withPrebundledDeps` turns on the vitest dependency optimizer for the packages you list, so each is bundled once and cached. It reads the package `exports`, adds every code entry to the optimizer `include` list, puts the cache under `<appDir>/node_modules/.vite-standards`, and stubs css imports and the node build of `debug`:
+
+```js
+export default withPrebundledDeps(defineStandardsVitest({ test: { include: ['src/**/*.test.ts'] } }), {
+  root: __dirname,
+  appDir: resolve(__dirname, 'apps/desktop'),
+  packages: ['@drizztdourden08/tessera'],
+});
+```
+
+Use it only when a package ships source and is slow to import cold. A listed package is shared as one prebundled copy, so `vi.mock` of its inner files does not apply.
+
 Write the tag in the options argument, on the test or on its `describe`: `it('rejects a path outside the root', { tags: ['critical'] }, () => {})`. The lint rule `local/test-has-one-tag` is on for `*.test.*`, `*.spec.*`, `*.e2e.*` and `*.e2e.test.*` files and for every file under a `tests` or `e2e` folder. It fails a test with no tag, two tags or an unknown tag. Playwright specs use their own form on `test(...)` and `test.describe(...)`: `{ tag: '@critical' }` or `{ tag: ['@e2e'] }`, with the same one-tag rule. A test that mixes the vitest form and the Playwright form has two tags. `testTags: false` in the ESLint factory turns it off, and `testTags: ['critical', 'standard', 'e2e', 'bench']` changes the names it accepts.
 
 The lint rule `local/spawn-hides-window` is on as an error for every `js`, `mjs`, `cjs`, `ts` and `tsx` file. A call to `spawn`, `spawnSync`, `exec`, `execSync`, `execFile`, `execFileSync` or `fork` from `child_process` must pass an options object with a `windowsHide` key: `true` for a console tool, `false` only for a GUI app whose window must show.
