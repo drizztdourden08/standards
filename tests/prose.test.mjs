@@ -66,6 +66,14 @@ describe('runProse ai in a translation file', { tags: ['standard'] }, () => {
     expect(lines.at(-1)).toMatch(/0 finding\(s\), 1 warning\(s\)\.$/);
   });
 
+  it('skips English word checks in a foreign-locale file and keeps the dash check', () => {
+    const root = tempTree({ 'src/locales/it/cheats.json': '{ "light": "Le torce illuminate restano accese", "dash": "a \u2014 b" }\n' });
+    const lines = captured();
+    expect(runProse({ rootDir: root })).toBe(1);
+    expect(lines.join('\n')).not.toMatch(/illuminate/);
+    expect(lines.at(-1)).toMatch(/1 finding\(s\), 0 warning\(s\)\.$/);
+  });
+
   it('fails for the same text in an English file', () => {
     const root = tempTree({ 'src/i18n/locales/en.json': '{ "back": "torna ai menu" }\n' });
     const lines = captured();

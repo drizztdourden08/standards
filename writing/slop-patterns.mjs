@@ -194,7 +194,11 @@ const bannedPattern = (banned) => ({
 
 const inLocale = (locale) => (p) => (p.languages?.includes(locale) ? { ...p, group: p.foreignGroup, advice: p.foreignAdvice } : p);
 
-const patternsFor = (banned, locale) => (banned?.length ? [...PATTERNS, bannedPattern(banned)] : PATTERNS).map(inLocale(locale));
+const isForeign = (locale) => locale !== null && locale !== 'en';
+
+const englishOnlyOff = (locale) => (p) => !isForeign(locale) || p.group !== 'prose';
+
+const patternsFor = (banned, locale) => (banned?.length ? [...PATTERNS, bannedPattern(banned)] : PATTERNS).filter(englishOnlyOff(locale)).map(inLocale(locale));
 
 const findSlop = (text, opts = {}) => {
   const allow = compileAllow(opts.allow ?? DEFAULT_ALLOW);
