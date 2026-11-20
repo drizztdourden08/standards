@@ -122,9 +122,10 @@ export { t };
 `;
   const ruleIds = (messages) => messages.map((m) => m.split(':')[0]);
 
-  it('reports ai in a foreign-locale file as the ambiguous rule only', async () => {
+  it('passes lower-case ai and reports upper-case AI in a foreign-locale file as the ambiguous rule only', async () => {
     const root = tempTree({ 'package.json': { name: 'x' } });
-    const ids = ruleIds(await lint(root, 'src/i18n/locales/it/menu.mjs', code));
+    expect(ruleIds(await lint(root, 'src/i18n/locales/it/menu.mjs', code))).not.toContain('local/no-ambiguous-brand-words');
+    const ids = ruleIds(await lint(root, 'src/i18n/locales/it/tool.mjs', code.replace('torna ai menu', 'usa la AI')));
     expect(ids).toContain('local/no-ambiguous-brand-words');
     expect(ids).not.toContain('local/no-tool-brand-words');
   });

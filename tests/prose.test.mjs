@@ -58,8 +58,8 @@ describe('runProse', { tags: ['standard'] }, () => {
 });
 
 describe('runProse ai in a translation file', { tags: ['standard'] }, () => {
-  it('prints a warning and exits 0 for ai in a foreign-locale file', () => {
-    const root = tempTree({ 'src/i18n/locales/it.json': '{ "back": "torna ai menu" }\n' });
+  it('passes lower-case ai and prints a warning, exit 0, for upper-case AI in a foreign-locale file', () => {
+    const root = tempTree({ 'src/i18n/locales/it.json': '{ "back": "torna ai menu", "tool": "usa la AI" }\n' });
     const lines = captured();
     expect(runProse({ rootDir: root })).toBe(0);
     expect(lines[0]).toMatch(/\(warning\)$/);

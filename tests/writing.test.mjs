@@ -48,10 +48,13 @@ describe('locale-based ai warning', { tags: ['standard'] }, () => {
     expect(localeOf('src/i18n/index.ts')).toBeNull();
   });
 
-  it('moves ai to the brand-ambiguous group in Italian and Japanese only', () => {
+  it('passes lower-case ai and warns on upper-case AI in Italian and Japanese only', () => {
     const groups = ['brand', 'brand-ambiguous'];
-    expect(findSlop('torna ai menu', { groups, locale: 'it' }).map((hit) => hit.group)).toEqual(['brand-ambiguous']);
-    expect(findSlop('ai', { groups, locale: 'ja' }).map((hit) => hit.group)).toEqual(['brand-ambiguous']);
+    expect(findSlop('torna ai menu', { groups, locale: 'it' })).toEqual([]);
+    expect(findSlop('Ai menu', { groups, locale: 'it' })).toEqual([]);
+    expect(findSlop('ai', { groups, locale: 'ja' })).toEqual([]);
+    expect(findSlop('usa la AI', { groups, locale: 'it' }).map((hit) => hit.group)).toEqual(['brand-ambiguous']);
+    expect(findSlop('AI', { groups, locale: 'ja' }).map((hit) => hit.group)).toEqual(['brand-ambiguous']);
     expect(findSlop('ai', { groups, locale: 'fr' }).map((hit) => hit.group)).toEqual(['brand']);
     expect(findSlop('ai', { groups, locale: 'en' }).map((hit) => hit.group)).toEqual(['brand']);
     expect(findSlop('torna ai menu', { groups }).map((hit) => hit.group)).toEqual(['brand']);

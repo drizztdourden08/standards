@@ -106,7 +106,8 @@ const PATTERNS = [
     languages: ['it', 'ja'],
     re: new RegExp(`(?<![\\w$])(?:${AMBIGUOUS_BRAND_WORDS})(?![\\w$])`, 'gi'),
     advice: 'These projects do not name this kind of tool or its vendor. Say what the code does, or delete the word.',
-    foreignAdvice: 'Leave it only when it is the Italian or Japanese word ai with its meaning in that language. If it names the tool, rewrite it.',
+    foreignRe: new RegExp(`(?<![\\w$])(?:${AMBIGUOUS_BRAND_WORDS.toUpperCase()})(?![\\w$])`, 'g'),
+    foreignAdvice: 'In Italian or Japanese the lower-case word ai is a plain word. Upper-case AI names the tool: leave it only when the text means the letters, or rewrite it.',
   },
   {
     id: 'exclamation',
@@ -192,7 +193,7 @@ const bannedPattern = (banned) => ({
   advice: 'This repo bans the word. Use a plain word, or delete it.',
 });
 
-const inLocale = (locale) => (p) => (p.languages?.includes(locale) ? { ...p, group: p.foreignGroup, advice: p.foreignAdvice } : p);
+const inLocale = (locale) => (p) => (p.languages?.includes(locale) ? { ...p, group: p.foreignGroup, advice: p.foreignAdvice, re: p.foreignRe ?? p.re } : p);
 
 const isForeign = (locale) => locale !== null && locale !== 'en';
 
