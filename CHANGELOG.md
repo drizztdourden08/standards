@@ -1,5 +1,20 @@
 # @drizztdourden08/standards
 
+## 0.16.0
+
+### Minor Changes
+
+- 07ca720: The word `ai` is now a warning, not an error, in Italian and Japanese translation files, where it is a plain word. It stays an error everywhere else, other languages included.
+- b6abdb3: The vitest entry adds withPrebundledDeps, which prebundles source-shipping packages so a cold test import is fast.
+
+### Patch Changes
+
+- 3015218: In Italian and Japanese translation files the lower-case word `ai` passes, since it is a plain word there (the Italian "to the"). Only upper-case `AI` still gets the warning.
+- ad8071a: The types-in-type-file and constants-in-constants-file hints name a kebab-case file for a hook: useOnlineConnection.ts points at online-connection.constants.ts, a name the structure check accepts.
+- 6faf7fe: The companion file hints drop a kind suffix from the stem: a type in online-settings.constants.ts points at online-settings.type.ts, a name the structure check accepts.
+- b7bd9cd: The unused-file check takes standards.config.mjs as a root entry when it exists, since the standards CLI reads it itself.
+- 21ac745: prose skips the English word and phrase checks in a translation file (a file under a locales folder whose language is not English). Dash, punctuation and brand checks still run there.
+
 ## 0.15.0
 
 ### Minor Changes
