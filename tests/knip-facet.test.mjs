@@ -91,7 +91,7 @@ describe('the written knip config module', { tags: ['standard'] }, () => {
     expect(file).toBe(join(root, 'node_modules', '.cache', 'standards', 'knip.config.mjs'));
     expect(existsSync(join(root, 'node_modules', '.cache', 'standards', 'knip.json'))).toBe(false);
     const config = (await import(pathToFileURL(file).href)).default;
-    expect(config.entry).toEqual(['index.ts', 'usage.ts']);
+    expect(config.entry).toEqual(['index.ts', 'standards.config.mjs', 'usage.ts']);
     expect(config.ignore).toEqual(['gen/**']);
     expect(config.compilers.ts(USAGE, join(root, 'usage.ts'))).toMatch(/^export \{ unusedElsewhere \} from '\.\/lib\.ts';$/m);
   });
